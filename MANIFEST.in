@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include garval_store *.css
+recursive-include garval_store *.csv
+recursive-include garval_store *.html
+recursive-include garval_store *.ico
+recursive-include garval_store *.js
+recursive-include garval_store *.json
+recursive-include garval_store *.md
+recursive-include garval_store *.png
+recursive-include garval_store *.py
+recursive-include garval_store *.svg
+recursive-include garval_store *.txt
+recursive-exclude garval_store *.pyc
