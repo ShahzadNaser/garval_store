@@ -1,0 +1,92 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Finca Garval - About Us") }}{% endblock %}
+
+{% block body_class %}about-page{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-bg">
+        <img src="/assets/garval_store/images/about-header.jpg" alt="Finca Garval">
+        <div class="page-header-overlay"></div>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title">Finca Garval</h1>
+        <p class="page-breadcrumb">
+            <span>{{ _("ABOUT US") }}</span>
+        </p>
+    </div>
+</section>
+
+<!-- About Introduction -->
+<section class="section about-intro-section">
+    <div class="container">
+        <div class="about-intro">
+            <p class="about-intro-text">{{ _("In the rugged lands of the Sierra de Cazorla, where the pure mountain air mixes with the aroma of centuries-old olive trees, the exceptional Extra Virgin Olive Oil of Finca Garval is born.") }}</p>
+        </div>
+        <div class="text-center" style="margin-top: var(--spacing-xl);">
+            <a href="/shop" class="btn btn-primary">{{ _("Shop") }}</a>
+        </div>
+    </div>
+</section>
+
+<!-- About Images -->
+<section class="section about-images-section" style="padding-top: 0;">
+    <div class="container">
+        <div class="about-images">
+            <img src="/assets/garval_store/images/about-grove.jpg" alt="{{ _('Olive Grove') }}">
+            <img src="/assets/garval_store/images/about-harvest.jpg" alt="{{ _('Harvest') }}">
+        </div>
+    </div>
+</section>
+
+<!-- Our Oil Section -->
+<section class="section our-oil-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-subtitle">{{ _("Our Product") }}</span>
+            <h2 class="section-title">{{ _("OUR OIL") }}</h2>
+            <p class="section-description">{{ _("Every drop of our oil represents our commitment to excellence and respect for tradition.") }}</p>
+        </div>
+
+        <div class="pillars-grid">
+            <!-- Pillar 1: Ecological -->
+            <div class="pillar-card">
+                <div class="pillar-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3 class="pillar-title">{{ _("100% Organic") }}</h3>
+                <p class="pillar-description">{{ _("We grow our olive trees following strict certified organic practices. No pesticides, no chemicals, just the purity of nature. Our commitment to the environment is reflected in every bottle.") }}</p>
+            </div>
+
+            <!-- Pillar 2: Traditional -->
+            <div class="pillar-card">
+                <div class="pillar-icon">
+                    <i class="fas fa-hand-holding-heart"></i>
+                </div>
+                <h3 class="pillar-title">{{ _("Traditional in Process") }}</h3>
+                <p class="pillar-description">{{ _("We follow artisanal methods passed down from generation to generation. Careful harvesting, cold milling, and optimal storage guarantee an oil of exceptional quality.") }}</p>
+            </div>
+
+            <!-- Pillar 3: Authentic -->
+            <div class="pillar-card">
+                <div class="pillar-icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3 class="pillar-title">{{ _("Authentic") }}</h3>
+                <p class="pillar-description">{{ _("Our oil is pure, without blends or additives. What reaches your table is exactly what comes from our olive trees: an authentic product with all the flavor and properties of extra virgin olive oil.") }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section" style="background-image: url('/assets/garval_store/images/cta-bg.jpg');">
+    <div class="container">
+        <h2 class="cta-title">{{ _("Taste the Difference") }}</h2>
+        <p class="cta-description">{{ _("Discover why our organic extra virgin olive oil is special. Direct from our farm to your table.") }}</p>
+        <a href="/shop" class="btn btn-white btn-lg">{{ _("Shop Now") }}</a>
+    </div>
+</section>
+{% endblock %}

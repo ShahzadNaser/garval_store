@@ -1,0 +1,8 @@
+import frappe
+from garval_store.utils import set_lang
+
+def get_context(context):
+    """Context for about page"""
+    context.lang = set_lang()
+    context.no_cache = 1
+    return context

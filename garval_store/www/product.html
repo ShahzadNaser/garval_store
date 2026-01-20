@@ -1,0 +1,205 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ product.name }} - Finca Garval{% endblock %}
+
+{% block body_class %}product-page{% endblock %}
+
+{% block content %}
+<section class="product-detail-section" style="padding-top: calc(var(--header-height) + var(--spacing-2xl)); padding-bottom: var(--spacing-3xl);">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" style="margin-bottom: var(--spacing-xl);">
+            <a href="/home">{{ _("Home") }}</a>
+            <span>/</span>
+            <a href="/shop">{{ _("Shop") }}</a>
+            <span>/</span>
+            <span>{{ product.name }}</span>
+        </nav>
+
+        <div class="product-detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-3xl);">
+            <!-- Product Images -->
+            <div class="product-gallery">
+                <div class="main-image" style="border-radius: var(--radius-lg); overflow: hidden; background: var(--color-gray-100);">
+                    <img src="{{ product.image or '/assets/garval_store/images/product-placeholder.jpg' }}"
+                         alt="{{ product.name }}"
+                         id="mainProductImage"
+                         style="width: 100%; height: auto;">
+                </div>
+                {% if product.images %}
+                <div class="image-thumbnails" style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-md);">
+                    <div class="thumbnail active"
+                         onclick="changeMainImage('{{ product.image }}')"
+                         style="width: 80px; height: 80px; border-radius: var(--radius-sm); overflow: hidden; cursor: pointer; border: 2px solid var(--color-primary);">
+                        <img src="{{ product.image }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% for img in product.images %}
+                    <div class="thumbnail"
+                         onclick="changeMainImage('{{ img }}')"
+                         style="width: 80px; height: 80px; border-radius: var(--radius-sm); overflow: hidden; cursor: pointer; border: 2px solid transparent;">
+                        <img src="{{ img }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <h1 class="product-detail-title" style="font-family: var(--font-primary); font-size: var(--font-size-4xl); margin-bottom: var(--spacing-md);">
+                    {{ product.name }}
+                </h1>
+
+                <div class="product-detail-price" style="font-size: var(--font-size-3xl); font-weight: 600; color: var(--color-primary); margin-bottom: var(--spacing-lg);">
+                    {{ product.formatted_price }}
+                </div>
+
+                {% if product.short_description %}
+                <p class="product-short-desc" style="color: var(--color-text-light); font-size: var(--font-size-lg); line-height: 1.7; margin-bottom: var(--spacing-xl);">
+                    {{ product.short_description }}
+                </p>
+                {% endif %}
+
+                <!-- Stock Status -->
+                <div class="stock-status" style="margin-bottom: var(--spacing-xl);">
+                    {% if product.out_of_stock %}
+                    <span style="color: var(--color-error); display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <i class="fas fa-times-circle"></i>
+                        {{ _("Out of Stock") }}
+                    </span>
+                    {% else %}
+                    <span style="color: var(--color-success); display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <i class="fas fa-check-circle"></i>
+                        {{ _("In Stock") }}
+                        {% if product.stock_qty %}({{ product.stock_qty }} {{ _("available") }}){% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Quantity & Add to Cart -->
+                {% if not product.out_of_stock %}
+                <div class="product-actions-detail" style="display: flex; gap: var(--spacing-md); align-items: center; margin-bottom: var(--spacing-xl);">
+                    <div class="quantity-selector" style="display: flex; align-items: center; border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm);">
+                        <button type="button" class="qty-btn" onclick="updateQty(-1)" style="padding: var(--spacing-md); border: none; background: none; cursor: pointer;">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" id="productQty" value="1" min="1" max="{{ product.stock_qty or 99 }}"
+                               style="width: 60px; text-align: center; border: none; font-size: var(--font-size-base);">
+                        <button type="button" class="qty-btn" onclick="updateQty(1)" style="padding: var(--spacing-md); border: none; background: none; cursor: pointer;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg"
+                            id="addToCartBtn"
+                            data-add-to-cart="{{ product.item_code }}"
+                            data-product-name="{{ product.name }}"
+                            data-product-price="{{ product.price }}"
+                            data-product-image="{{ product.image }}"
+                            style="flex: 1;">
+                        <i class="fas fa-shopping-cart"></i>
+                        {{ _("Add to Cart") }}
+                    </button>
+                </div>
+                {% else %}
+                <div style="margin-bottom: var(--spacing-xl);">
+                    <button class="btn btn-outline btn-lg" disabled style="width: 100%;">
+                        {{ _("Product Unavailable") }}
+                    </button>
+                </div>
+                {% endif %}
+
+                <!-- Product Meta -->
+                <div class="product-meta" style="border-top: 1px solid var(--color-gray-200); padding-top: var(--spacing-lg);">
+                    <p style="margin-bottom: var(--spacing-sm);">
+                        <strong>{{ _("SKU:") }}</strong>
+                        <span style="color: var(--color-text-light);">{{ product.item_code }}</span>
+                    </p>
+                    {% if product.uom %}
+                    <p style="margin-bottom: var(--spacing-sm);">
+                        <strong>{{ _("Unit:") }}</strong>
+                        <span style="color: var(--color-text-light);">{{ product.uom }}</span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Description -->
+        {% if product.description %}
+        <div class="product-description" style="margin-top: var(--spacing-3xl);">
+            <h2 style="font-family: var(--font-primary); font-size: var(--font-size-2xl); margin-bottom: var(--spacing-lg);">
+                {{ _("Description") }}
+            </h2>
+            <div class="description-content" style="color: var(--color-text-light); line-height: 1.8;">
+                {{ product.description | safe }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Related Products (Optional) -->
+{% if related_products %}
+<section class="section related-products-section" style="background: var(--color-gray-100);">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{{ _("Related Products") }}</h2>
+        </div>
+        <div class="products-grid">
+            {% for item in related_products %}
+            <div class="product-card">
+                <div class="product-image">
+                    <a href="/product/{{ item.slug }}">
+                        <img src="{{ item.image or '/assets/garval_store/images/product-placeholder.jpg' }}" alt="{{ item.name }}">
+                    </a>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">
+                        <a href="/product/{{ item.slug }}">{{ item.name }}</a>
+                    </h3>
+                    <div class="product-price">{{ item.formatted_price }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function changeMainImage(src) {
+    document.getElementById('mainProductImage').src = src;
+    document.querySelectorAll('.thumbnail').forEach(t => {
+        t.style.borderColor = 'transparent';
+    });
+    event.currentTarget.style.borderColor = 'var(--color-primary)';
+}
+
+function updateQty(change) {
+    const input = document.getElementById('productQty');
+    let value = parseInt(input.value) || 1;
+    value = Math.max(1, Math.min(value + change, parseInt(input.max) || 99));
+    input.value = value;
+}
+
+// Override add to cart to use quantity
+document.getElementById('addToCartBtn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent global handler from firing
+    e.stopImmediatePropagation(); // Stop all handlers
+
+    const qty = parseInt(document.getElementById('productQty').value) || 1;
+    const product = {
+        id: this.dataset.addToCart,
+        name: this.dataset.productName,
+        price: parseFloat(this.dataset.productPrice),
+        image: this.dataset.productImage,
+        quantity: qty
+    };
+    GarvalStore.Cart.addItem(product);
+}, true); // Use capture phase to run before global handler
+</script>
+{% endblock %}

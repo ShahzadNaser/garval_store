@@ -1,0 +1,130 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Finca Garval - Organic Extra Virgin Olive Oil") }}{% endblock %}
+
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-bg">
+        <img src="/assets/garval_store/images/hero-bg.jpg" alt="Olive Grove">
+        <div class="hero-overlay"></div>
+    </div>
+    <div class="hero-content">
+        <span class="hero-subtitle">{{ _("From the Sierra de Cazorla") }}</span>
+        <h1 class="hero-title">{{ _("Organic Extra Virgin Olive Oil") }}</h1>
+        <p class="hero-description">{{ _("Discover the pure essence of our land. Extra virgin olive oil produced traditionally, respecting the environment and our family heritage.") }}</p>
+        <div class="hero-buttons">
+            <a href="/shop" class="btn btn-primary btn-lg">{{ _("Visit Shop") }}</a>
+            <a href="/about" class="btn btn-white btn-lg">{{ _("About Us") }}</a>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="section features-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-subtitle">{{ _("Why Choose Us") }}</span>
+            <h2 class="section-title">{{ _("The Excellence of Our Oil") }}</h2>
+        </div>
+        <div class="features-grid">
+            <!-- Feature 1: Purity -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3 class="feature-title">{{ _("100% Purity") }}</h3>
+                <p class="feature-description">{{ _("Pure extra virgin olive oil, without blends or additives. Only the best juice from selected olives.") }}</p>
+            </div>
+
+            <!-- Feature 2: Ecology -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <h3 class="feature-title">{{ _("Organic") }}</h3>
+                <p class="feature-description">{{ _("Grown following certified organic practices. We respect the land and environment at every stage.") }}</p>
+            </div>
+
+            <!-- Feature 3: Tradition -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-hand-holding-heart"></i>
+                </div>
+                <h3 class="feature-title">{{ _("Tradition") }}</h3>
+                <p class="feature-description">{{ _("Generations of family knowledge come together to create an oil with unique character and exceptional flavor.") }}</p>
+            </div>
+        </div>
+        <div class="text-center" style="margin-top: var(--spacing-2xl);">
+            <a href="/about" class="btn btn-outline">{{ _("Learn More") }}</a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="section products-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-subtitle">{{ _("Our Products") }}</span>
+            <h2 class="section-title">{{ _("Extra Virgin Olive Oil") }}</h2>
+            <p class="section-description">{{ _("Select the format that best suits your needs") }}</p>
+        </div>
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{{ product.image or '/assets/garval_store/images/product-placeholder.jpg' }}" alt="{{ product.name }}">
+                    {% if product.out_of_stock %}
+                    <span class="product-badge out-of-stock">{{ _("Out of Stock") }}</span>
+                    {% endif %}
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">
+                        <a href="/product/{{ product.slug }}">{{ product.name }}</a>
+                    </h3>
+                    <div class="product-price">{{ currency_symbol }}{{ product.price }}</div>
+                    <div class="product-actions">
+                        {% if not product.out_of_stock %}
+                        <button class="btn btn-primary"
+                                data-add-to-cart="{{ product.name }}"
+                                data-product-name="{{ product.name }}"
+                                data-product-price="{{ product.price }}"
+                                data-product-image="{{ product.image }}">
+                            {{ _("Add to Cart") }}
+                        </button>
+                        {% else %}
+                        <button class="btn btn-outline" disabled>{{ _("Unavailable") }}</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- No products message -->
+            {% if not products %}
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-state-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <h3 class="empty-state-title">{{ _("Coming Soon") }}</h3>
+                <p class="empty-state-description">{{ _("We're preparing our products. Check back soon!") }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="text-center" style="margin-top: var(--spacing-2xl);">
+            <a href="/shop" class="btn btn-outline">{{ _("View All Products") }}</a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section" style="background-image: url('/assets/garval_store/images/cta-bg.jpg');">
+    <div class="container">
+        <h2 class="cta-title">{{ _("A Gourmet Experience") }}</h2>
+        <p class="cta-description">{{ _("Discover the authentic taste of organic extra virgin olive oil. Direct from our farm to your table.") }}</p>
+        <a href="/shop" class="btn btn-white btn-lg">{{ _("Visit Shop") }}</a>
+    </div>
+</section>
+{% endblock %}

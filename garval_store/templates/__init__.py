@@ -1,0 +1,1 @@
+# Garval Store Templates

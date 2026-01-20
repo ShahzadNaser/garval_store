@@ -1,0 +1,91 @@
+<!-- Navigation Bar -->
+<header class="garval-header" id="mainHeader">
+    <div class="header-container">
+        <!-- Logo -->
+        <div class="logo-wrapper">
+            <a href="/home">
+                <img class="logo-white" src="/assets/garval_store/images/logo-white.png" alt="Finca Garval" style="height: 50px;">
+                <img class="logo-green" src="/assets/garval_store/images/logo-green.png" alt="Finca Garval" style="height: 50px;">
+            </a>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Navigation -->
+        <nav class="main-nav" id="mainNav">
+            <ul class="nav-menu">
+                <li><a href="/home" class="nav-link">{{ _("Home") }}</a></li>
+                <li><a href="/about" class="nav-link">{{ _("About Us") }}</a></li>
+                <li><a href="/shop" class="nav-link">{{ _("Shop") }}</a></li>
+                <li><a href="/contact" class="nav-link">{{ _("Contact") }}</a></li>
+            </ul>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+            <!-- Language Switcher -->
+            <div class="language-switcher">
+                <button class="lang-toggle" id="langToggle">
+                    <i class="fas fa-globe"></i>
+                    <span class="current-lang">{{ frappe.local.lang[:2].upper() if frappe.local.lang else 'ES' }}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <a href="?lang=es" class="lang-option {% if frappe.local.lang == 'es' %}active{% endif %}">
+                        <span class="flag">🇪🇸</span> Español
+                    </a>
+                    <a href="?lang=en" class="lang-option {% if frappe.local.lang == 'en' %}active{% endif %}">
+                        <span class="flag">🇬🇧</span> English
+                    </a>
+                </div>
+            </div>
+
+            <!-- User Account -->
+            <a href="/my-account" class="header-icon user-icon" title="{{ _('My Account') }}">
+                <i class="fas fa-user"></i>
+            </a>
+
+            <!-- Cart -->
+            <a href="/cart" class="header-icon cart-icon" title="{{ _('Cart') }}">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cartCount">0</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Navigation Overlay -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay">
+    <div class="mobile-nav-content">
+        <button class="mobile-nav-close" id="mobileNavClose">
+            <i class="fas fa-times"></i>
+        </button>
+        <nav class="mobile-nav-menu">
+            <ul>
+                <li><a href="/home">{{ _("Home") }}</a></li>
+                <li><a href="/about">{{ _("About Us") }}</a></li>
+                <li><a href="/shop">{{ _("Shop") }}</a></li>
+                <li><a href="/contact">{{ _("Contact") }}</a></li>
+            </ul>
+        </nav>
+        <div class="mobile-nav-actions">
+            <a href="/my-account" class="mobile-nav-link">
+                <i class="fas fa-user"></i>
+                <span>{{ _("My Account") }}</span>
+            </a>
+            <a href="/cart" class="mobile-nav-link">
+                <i class="fas fa-shopping-cart"></i>
+                <span>{{ _("Cart") }}</span>
+                <span class="cart-count">0</span>
+            </a>
+        </div>
+        <!-- Mobile Language Switcher -->
+        <div class="mobile-lang-switcher">
+            <a href="?lang=es" class="lang-btn {% if frappe.local.lang == 'es' %}active{% endif %}">🇪🇸 ES</a>
+            <a href="?lang=en" class="lang-btn {% if frappe.local.lang == 'en' %}active{% endif %}">🇬🇧 EN</a>
+        </div>
+    </div>
+</div>

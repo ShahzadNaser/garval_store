@@ -1,0 +1,41 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Payment Success") }}{% endblock %}
+
+{% block header %}{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{%- block page_content -%}
+<div class='page-card'>
+	<div class='page-card-head'>
+		<span class='indicator green'>
+			{{ _("Success") }}</span>
+	</div>
+	<p>{{ payment_message or _("Your payment was successfully accepted") }}</p>
+	{% if not payment_message %}
+		<div>
+			<a
+			   href='{{ redirect_to }}'
+			   class='btn btn-primary btn-sm'>
+				{{ _("Continue") }}
+			</a>
+		</div>
+	{% endif %}
+</div>
+<style>
+/* Hide empty header */
+.page-header-wrapper {
+	display: none !important;
+}
+{% include "templates/styles/card_style.css" %}
+</style>
+<script>
+	frappe.ready(function() {
+		if('{{ redirect_to }}'){
+			setTimeout(function(){
+				window.location.href = '{{ redirect_to }}';
+			}, 4000);
+		}
+	})
+</script>
+{% endblock %}

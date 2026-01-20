@@ -1,0 +1,133 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Legal Notice") }} - Finca Garval{% endblock %}
+
+{% block body_class %}legal-page{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header" style="height: 200px;">
+    <div class="page-header-bg">
+        <img src="/assets/garval_store/images/politicas-web-header.jpg" alt="{{ _('Legal Notice') }}">
+        <div class="page-header-overlay"></div>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title">
+            {{ _("Legal Notice") }}
+        </h1>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="legal-content" style="padding: var(--spacing-xl) 0;">
+    <div class="container" style="max-width: 900px;">
+        <div class="legal-text" style="background: white; padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            
+            {% if current_lang == 'es' %}
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">TÉRMINOS Y CONDICIONES DE VENTA</h2>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">1. Aceptación de los Términos y Condiciones</h3>
+            <p>Estos términos y condiciones (en adelante, «Términos») regulan todas las transacciones de venta de productos realizadas por la tienda online de Finca Garval, fincagarval.com. Al realizar un pedido en Finca Garval, el Cliente acepta sin reservas los presentes Términos.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">2. Normativa Aplicable</h3>
+            <p>Este aviso legal se rige por la normativa española, en particular por:</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>La Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSICE).</li>
+                <li>La Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD).</li>
+                <li>El Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo, de 27 de abril de 2016, relativo a la protección de las personas físicas en lo que respecta al tratamiento de datos personales y a la libre circulación de estos datos (RGPD).</li>
+            </ul>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">3. Identificación de las Partes</h3>
+            <p>Por una parte, SYCO BUSINESS & INVESTMENT S.L. (en adelante, » SYCO BUSINESS & INVESTMENT «), con CIF B19599026 y domicilio en C/RAMÓN Y CAJAL 11, España, correo electrónico: info@fincagarval.com, actuando como proveedor de los productos contratados por el consumidor y/o usuario.</p>
+            <p>Por otra parte, el Cliente, registrado en el sitio web y cuyo propósito es ser consumidor y/o usuario de esta y/o contratar los productos o servicios de SYCO BUSINESS & INVESTMENT. El Cliente tiene responsabilidad por la veracidad de los datos proporcionados en la presente web.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">4. Precios</h3>
+            <p>Los precios publicados en la tienda online Finca Garval son en euros e incluyen el IVA aplicable en el día del pedido. SYCO BUSINESS & INVESTMENT se reserva el derecho de modificar los precios en cualquier momento, pero los cambios no afectarán a los pedidos ya confirmados.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">5. Objeto del Contrato (Descripción de los Productos y Servicios)</h3>
+            <p>El objeto del presente contrato es regular la relación entre SYCO BUSINESS & INVESTMENT y el Cliente en el momento en que éste otorga su consentimiento durante el proceso de contratación.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">6. Formas de Pago</h3>
+            <p>El Cliente puede elegir pagar sus compras en Finca Garval mediante transferencia bancaria o mediante tarjeta de crédito o débito a través de la pasarela de pago segura.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">7. Producto</h3>
+            <p>Las ofertas presentadas en Finca Garval son válidas dentro del límite de las existencias disponibles y de las fechas establecidas para dicha oferta. SYCO BUSINESS & INVESTMENT se reserva el derecho de modificar el surtido de productos en función de las dificultades impuestas por sus proveedores.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">8. Envíos y Devoluciones</h3>
+            <p>Los plazos de entrega y los gastos de envío se detallarán en el proceso de compra. El Cliente tiene derecho a devolver un producto dentro de los 14 días naturales siguientes a la recepción de este, asumiendo los gastos de envío de la devolución, salvo en casos justificados.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">9. Registro de Usuarios</h3>
+            <p>El registro de usuarios es necesario para realizar compras en Finca Garval. Los datos personales proporcionados quedarán protegidos de acuerdo con la legislación aplicable en materia de protección de datos personales.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">10. Proceso de Compra</h3>
+            <p>El Cliente deberá seguir el proceso de compra indicado en el sitio web para adquirir los productos deseados.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">11. Garantías</h3>
+            <p>SYCO BUSINESS & INVESTMENT garantiza la sustitución gratuita de productos por causas justificadas, asumiendo los gastos de envío correspondientes.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">12. Contacto</h3>
+            <p>Para cualquier consulta o solicitud de información adicional, el Cliente puede ponerse en contacto con Finca Garval a través de los medios indicados en el sitio web.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">13. Resolución de Conflictos</h3>
+            <p>Las compras realizadas en Finca Garval se someten a la legislación española. En caso de conflicto, las partes se someterán a los Juzgados y Tribunales de la ciudad de Granada.</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">14. Reserva de Derechos</h3>
+            <p>Los precios y ofertas son válidos salvo error tipográfico, rupturas de stock o incidencias de índole técnica.</p>
+            <p style="margin-top: var(--spacing-md);"><strong>Fecha de última actualización: 13 DE FEBRERO DE 2024</strong></p>
+            {% else %}
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("TERMS AND CONDITIONS OF SALE") }}</h2>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">1. {{ _("Acceptance of Terms and Conditions") }}</h3>
+            <p>{{ _("These terms and conditions (hereinafter, 'Terms') govern all product sales transactions made through the Finca Garval online store, fincagarval.com. By placing an order at Finca Garval, the Customer accepts these Terms without reservation.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">2. {{ _("Applicable Regulations") }}</h3>
+            <p>{{ _("This legal notice is governed by Spanish regulations, in particular by:") }}</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>{{ _("Law 34/2002, of July 11, on Information Society Services and Electronic Commerce (LSSICE).") }}</li>
+                <li>{{ _("Organic Law 3/2018, of December 5, on Personal Data Protection and guarantee of digital rights (LOPDGDD).") }}</li>
+                <li>{{ _("Regulation (EU) 2016/679 of the European Parliament and of the Council, of April 27, 2016, regarding the protection of natural persons with regard to the processing of personal data and on the free movement of such data (GDPR).") }}</li>
+            </ul>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">3. {{ _("Identification of the Parties") }}</h3>
+            <p>{{ _("On one hand, SYCO BUSINESS & INVESTMENT S.L. (hereinafter, 'SYCO BUSINESS & INVESTMENT'), with Tax ID B19599026 and registered office at C/RAMÓN Y CAJAL 11, España, email: info@fincagarval.com, acting as provider of the products contracted by the consumer and/or user.") }}</p>
+            <p>{{ _("On the other hand, the Customer, registered on the website and whose purpose is to be a consumer and/or user of this and/or contract the products or services of SYCO BUSINESS & INVESTMENT. The Customer is responsible for the veracity of the data provided on this website.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">4. {{ _("Prices") }}</h3>
+            <p>{{ _("The prices published in the Finca Garval online store are in euros and include the applicable VAT on the day of the order. SYCO BUSINESS & INVESTMENT reserves the right to modify prices at any time, but changes will not affect orders already confirmed.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">5. {{ _("Object of the Contract (Description of Products and Services)") }}</h3>
+            <p>{{ _("The object of this contract is to regulate the relationship between SYCO BUSINESS & INVESTMENT and the Customer at the moment when the latter gives their consent during the contracting process.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">6. {{ _("Payment Methods") }}</h3>
+            <p>{{ _("The Customer can choose to pay their purchases at Finca Garval by bank transfer or by credit or debit card through the secure payment gateway.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">7. {{ _("Product") }}</h3>
+            <p>{{ _("The offers presented in Finca Garval are valid within the limit of available stock and the dates established for such offer. SYCO BUSINESS & INVESTMENT reserves the right to modify the product range depending on the difficulties imposed by its suppliers.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">8. {{ _("Shipping and Returns") }}</h3>
+            <p>{{ _("Delivery times and shipping costs will be detailed in the purchase process. The Customer has the right to return a product within 14 natural days following receipt of it, assuming the shipping costs of the return, except in justified cases.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">9. {{ _("User Registration") }}</h3>
+            <p>{{ _("User registration is necessary to make purchases at Finca Garval. The personal data provided will be protected in accordance with applicable legislation on personal data protection.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">10. {{ _("Purchase Process") }}</h3>
+            <p>{{ _("The Customer must follow the purchase process indicated on the website to acquire the desired products.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">11. {{ _("Warranties") }}</h3>
+            <p>{{ _("SYCO BUSINESS & INVESTMENT guarantees the free replacement of products for justified causes, assuming the corresponding shipping costs.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">12. {{ _("Contact") }}</h3>
+            <p>{{ _("For any inquiry or request for additional information, the Customer can contact Finca Garval through the means indicated on the website.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">13. {{ _("Conflict Resolution") }}</h3>
+            <p>{{ _("Purchases made at Finca Garval are subject to Spanish legislation. In case of conflict, the parties will submit to the Courts and Tribunals of the city of Granada.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">14. {{ _("Reservation of Rights") }}</h3>
+            <p>{{ _("Prices and offers are valid except for typographical error, stock breaks or technical incidents.") }}</p>
+            <p style="margin-top: var(--spacing-md);"><strong>{{ _("Last update date") }}: 13 {{ _("FEBRUARY") }} 2024</strong></p>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+{% endblock %}

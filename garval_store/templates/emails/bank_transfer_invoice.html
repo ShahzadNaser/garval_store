@@ -1,0 +1,77 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #333;">{{ _("Invoice Pending for Payment") }}</h2>
+    
+    <p>{{ _("Dear") }} {{ customer_name }},</p>
+    
+    <p>{{ _("Thank you for your order. Please find your invoice attached.") }}</p>
+    
+    <p><strong>{{ _("Order Number") }}:</strong> {{ sales_order }}</p>
+    <p><strong>{{ _("Invoice Number") }}:</strong> {{ invoice_number }}</p>
+    <p><strong>{{ _("Amount Due") }}:</strong> {{ amount }}</p>
+    
+    <h3 style="color: #333; margin-top: 30px;">{{ _("Bank Transfer Details") }}</h3>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        {% if bank_details.iban %}
+        <p><strong>{{ _("IBAN") }}:</strong> {{ bank_details.iban }}</p>
+        {% endif %}
+        {% if bank_details.swift_number %}
+        <p><strong>{{ _("SWIFT/BIC") }}:</strong> {{ bank_details.swift_number }}</p>
+        {% endif %}
+        {% if bank_details.bank_account_no %}
+        <p><strong>{{ _("Account Number") }}:</strong> {{ bank_details.bank_account_no }}</p>
+        {% endif %}
+        {% if bank_details.bank %}
+        <p><strong>{{ _("Bank Name") }}:</strong> {{ bank_details.bank }}</p>
+        {% endif %}
+        {% if bank_details.branch_code %}
+        <p><strong>{{ _("Branch Code") }}:</strong> {{ bank_details.branch_code }}</p>
+        {% endif %}
+    </div>
+    
+    <p><strong>{{ _("Reference Number") }}:</strong> {{ invoice_number }}</p>
+    
+    <p style="margin-top: 30px;">{{ _("Please transfer the amount using the bank details above and reply to this email with your bank transfer receipt attached.") }}</p>
+    
+    <p>{{ _("Thank you for your business!") }}</p>
+    
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+    
+    <!-- Spanish Version -->
+    <h2 style="color: #333;">{{ _("Factura Pendiente de Pago") }}</h2>
+    
+    <p>{{ _("Estimado/a") }} {{ customer_name }},</p>
+    
+    <p>{{ _("Gracias por su pedido. Por favor, encuentre su factura adjunta.") }}</p>
+    
+    <p><strong>{{ _("Número de Pedido") }}:</strong> {{ sales_order }}</p>
+    <p><strong>{{ _("Número de Factura") }}:</strong> {{ invoice_number }}</p>
+    <p><strong>{{ _("Importe Pendiente") }}:</strong> {{ amount }}</p>
+    
+    <h3 style="color: #333; margin-top: 30px;">{{ _("Datos de Transferencia Bancaria") }}</h3>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        {% if bank_details.iban %}
+        <p><strong>{{ _("IBAN") }}:</strong> {{ bank_details.iban }}</p>
+        {% endif %}
+        {% if bank_details.swift_number %}
+        <p><strong>{{ _("SWIFT/BIC") }}:</strong> {{ bank_details.swift_number }}</p>
+        {% endif %}
+        {% if bank_details.bank_account_no %}
+        <p><strong>{{ _("Número de Cuenta") }}:</strong> {{ bank_details.bank_account_no }}</p>
+        {% endif %}
+        {% if bank_details.bank %}
+        <p><strong>{{ _("Nombre del Banco") }}:</strong> {{ bank_details.bank }}</p>
+        {% endif %}
+        {% if bank_details.branch_code %}
+        <p><strong>{{ _("Código de Sucursal") }}:</strong> {{ bank_details.branch_code }}</p>
+        {% endif %}
+    </div>
+    
+    <p><strong>{{ _("Número de Referencia") }}:</strong> {{ invoice_number }}</p>
+    
+    <p style="margin-top: 30px;">{{ _("Por favor, transfiera el importe utilizando los datos bancarios anteriores y responda a este correo con el comprobante de transferencia bancaria adjunto.") }}</p>
+    
+    <p>{{ _("¡Gracias por su negocio!") }}</p>
+</div>
+

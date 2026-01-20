@@ -1,0 +1,204 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Shopping Cart") }} - Finca Garval{% endblock %}
+
+{% block body_class %}cart-page{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header" style="height: 250px;">
+    <div class="page-header-bg">
+        <img src="/assets/garval_store/images/shop-header.jpg" alt="Cart">
+        <div class="page-header-overlay"></div>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title" data-i18n="cart.title">
+            {{ _("Shopping Cart") }}
+        </h1>
+        <p class="page-breadcrumb">
+            <a href="/home">{{ _("Home") }}</a> /
+            <span>{{ _("Cart") }}</span>
+        </p>
+    </div>
+</section>
+
+<!-- Cart Section -->
+<section class="cart-container">
+    <div class="container">
+        <!-- Cart Content (populated by JS) -->
+        <div id="cartContent">
+            <!-- Loading state -->
+            <div class="loading" id="cartLoading">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Empty Cart State (hidden by default) -->
+            <div class="empty-state" id="emptyCart" style="display: none;">
+                <div class="empty-state-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3 class="empty-state-title" data-i18n="cart.empty">
+                    {{ _("Your cart is empty") }}
+                </h3>
+                <p class="empty-state-description" data-i18n="cart.emptyDesc">
+                    {{ _("Looks like you haven't added any products to your cart yet.") }}
+                </p>
+                <a href="/shop" class="btn btn-primary" data-i18n="cart.continueShopping">
+                    {{ _("Continue Shopping") }}
+                </a>
+            </div>
+
+            <!-- Cart with items (hidden by default) -->
+            <div id="cartWithItems" style="display: none;">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">{{ _("Product") }}</th>
+                            <th style="width: 15%;">{{ _("Price") }}</th>
+                            <th style="width: 20%;">{{ _("Quantity") }}</th>
+                            <th style="width: 15%;">{{ _("Total") }}</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartItems">
+                        <!-- Items populated by JS -->
+                    </tbody>
+                </table>
+
+                <div class="cart-summary">
+                    <div>
+                        <a href="/shop" class="btn btn-outline">
+                            <i class="fas fa-arrow-left"></i>
+                            {{ _("Continue Shopping") }}
+                        </a>
+                    </div>
+                    <div class="cart-totals">
+                        <h3>{{ _("Order Summary") }}</h3>
+                        <div class="cart-totals-row">
+                            <span>{{ _("Subtotal") }}</span>
+                            <span id="cartSubtotal">{{ currency_symbol }}0.00</span>
+                        </div>
+                        <div class="cart-totals-row">
+                            <span>{{ _("Shipping") }}</span>
+                            <span id="cartShipping">{{ _("Calculated at checkout") }}</span>
+                        </div>
+                        <div class="cart-totals-row total">
+                            <span>{{ _("Total") }}</span>
+                            <span id="cartTotal">{{ currency_symbol }}0.00</span>
+                        </div>
+                        <div class="cart-actions">
+                            <a href="/checkout" class="btn btn-primary" style="width: 100%;">
+                                {{ _("Checkout") }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    renderCart();
+});
+
+function renderCart() {
+    const loading = document.getElementById('cartLoading');
+    const emptyCart = document.getElementById('emptyCart');
+    const cartWithItems = document.getElementById('cartWithItems');
+    const cartItemsContainer = document.getElementById('cartItems');
+
+    // Hide loading
+    loading.style.display = 'none';
+
+    // Get cart items
+    const items = GarvalStore.Cart.items;
+
+    if (items.length === 0) {
+        emptyCart.style.display = 'block';
+        cartWithItems.style.display = 'none';
+        return;
+    }
+
+    emptyCart.style.display = 'none';
+    cartWithItems.style.display = 'block';
+
+    // Render items
+    cartItemsContainer.innerHTML = items.map(item => {
+        const placeholder = '/assets/garval_store/images/product-placeholder.jpg';
+        let imageUrl = item.image;
+
+        if (!imageUrl || imageUrl === 'None' || imageUrl === 'null' || imageUrl === 'undefined') {
+            imageUrl = placeholder;
+        }
+
+        return `
+        <tr>
+            <td>
+                <div class="cart-product">
+                    <div class="cart-product-image">
+                        <img src="${imageUrl}"
+                             alt="${item.name}"
+                             onerror="this.onerror=null; this.src='${placeholder}';">
+                    </div>
+                    <div class="cart-product-title">${item.name}</div>
+                </div>
+            </td>
+            <td class="cart-price" data-price="${item.price}">{{ currency_symbol }}${item.price.toFixed(2)}</td>
+            <td>
+                <div class="cart-quantity">
+                    <button class="quantity-btn quantity-minus" onclick="updateCartQty('${item.id}', -1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" class="quantity-input" value="${item.quantity}"
+                           data-product-id="${item.id}"
+                           min="1" onchange="updateCartQtyDirect('${item.id}', this.value)">
+                    <button class="quantity-btn quantity-plus" onclick="updateCartQty('${item.id}', 1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </td>
+            <td class="cart-total">{{ currency_symbol }}${(item.price * item.quantity).toFixed(2)}</td>
+            <td>
+                <button class="cart-remove" onclick="removeCartItem('${item.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+        `;
+    }).join('');
+
+    // Update totals
+    updateCartTotals();
+}
+
+function updateCartQty(productId, change) {
+    const item = GarvalStore.Cart.items.find(i => i.id === productId);
+    if (item) {
+        const newQty = Math.max(1, item.quantity + change);
+        GarvalStore.Cart.updateQuantity(productId, newQty);
+        renderCart();
+    }
+}
+
+function updateCartQtyDirect(productId, qty) {
+    const newQty = Math.max(1, parseInt(qty) || 1);
+    GarvalStore.Cart.updateQuantity(productId, newQty);
+    renderCart();
+}
+
+function removeCartItem(productId) {
+    GarvalStore.Cart.removeItem(productId);
+    renderCart();
+}
+
+function updateCartTotals() {
+    const total = GarvalStore.Cart.getTotal();
+    document.getElementById('cartSubtotal').textContent = `{{ currency_symbol }}${total.toFixed(2)}`;
+    document.getElementById('cartTotal').textContent = `{{ currency_symbol }}${total.toFixed(2)}`;
+}
+</script>
+{% endblock %}

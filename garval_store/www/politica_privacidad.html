@@ -1,0 +1,85 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Privacy Policy") }} - Finca Garval{% endblock %}
+
+{% block body_class %}legal-page{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header" style="height: 200px;">
+    <div class="page-header-bg">
+        <img src="/assets/garval_store/images/politicas-web-header.jpg" alt="{{ _('Privacy Policy') }}">
+        <div class="page-header-overlay"></div>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title">
+            {{ _("Privacy Policy") }}
+        </h1>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="legal-content" style="padding: var(--spacing-xl) 0;">
+    <div class="container" style="max-width: 900px;">
+        <div class="legal-text" style="background: white; padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            
+            {% if current_lang == 'es' %}
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">1. Responsable del Tratamiento de Datos</h2>
+            <p><strong>SYCO BUSINESS & INVESTMENT S.L.</strong> (en adelante, «SYCO BUSINESS & INVESTMENT»)</p>
+            <p><strong>CIF:</strong> B19599026</p>
+            <p><strong>Dirección:</strong> Ramón y Cajal 11, 18003 Granada, España</p>
+            <p><strong>www.fincagarval.com</strong></p>
+            <p><strong>info@fincagarval.com</strong></p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">2. Recopilación de Datos y Finalidades</h2>
+            
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">Formularios de Contacto</h3>
+            <p>Los datos personales proporcionados en el formulario de contacto serán tratados por SYCO BUSINESS & INVESTMENT para atender las consultas de los usuarios y para el envío de información comercial, siempre que el usuario marque la casilla de aceptación correspondiente. El tratamiento de estos datos se basa en el consentimiento del interesado al enviar el formulario y aceptar la Política de Privacidad.</p>
+            <p>Los datos personales serán tratados durante el tiempo estrictamente necesario para atender la solicitud del usuario.</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">3. Comunicación de Datos a Terceros</h2>
+            <p>SYCO BUSINESS & INVESTMENT no cederá datos personales a terceros, salvo obligación legal. Sin embargo, para la prestación adecuada de servicios, SYCO BUSINESS & INVESTMENT podrá comunicar ciertos datos personales a terceros que le presten servicios, únicamente para el correcto funcionamiento de la empresa.</p>
+            <p>Todas las comunicaciones de datos se realizarán en cumplimiento de la normativa de protección de datos y mediante contratos de encargo de tratamiento con los terceros involucrados.</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">4. Ejercicio de Derechos</h2>
+            <p>Los usuarios tienen derecho de acceso, rectificación, supresión, oposición, limitación al tratamiento y portabilidad de sus datos personales, así como la posibilidad de revocar su consentimiento. Estos derechos pueden ser ejercidos enviando un correo electrónico a info@fincagarval.com, incluyendo nombre, apellidos, dirección, derecho que se desea ejercitar y contenido de la solicitud.</p>
+            <p>En caso de no obtener satisfacción en el ejercicio de sus derechos, los usuarios tienen derecho a presentar una reclamación ante la Agencia Española de Protección de Datos.</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">5. Mantenimiento de los Datos</h2>
+            <p>Los usuarios son responsables de mantener actualizados los datos proporcionados a SYCO BUSINESS & INVESTMENT. SYCO BUSINESS & INVESTMENT no se hace responsable de los daños y perjuicios derivados de la falta de veracidad, inexactitud, falta de vigencia o autenticidad de los datos proporcionados por los usuarios.</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">6. Cookies</h2>
+            <p>Para obtener información sobre el uso de cookies en nuestro sitio web, consulte nuestra Política de Cookies.</p>
+            {% else %}
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">1. {{ _("Data Controller") }}</h2>
+            <p><strong>SYCO BUSINESS & INVESTMENT S.L.</strong> (hereinafter, "SYCO BUSINESS & INVESTMENT")</p>
+            <p><strong>{{ _("Tax ID") }}:</strong> B19599026</p>
+            <p><strong>{{ _("Address") }}:</strong> Ramón y Cajal 11, 18003 Granada, España</p>
+            <p><strong>www.fincagarval.com</strong></p>
+            <p><strong>info@fincagarval.com</strong></p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">2. {{ _("Data Collection and Purposes") }}</h2>
+            
+            <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">{{ _("Contact Forms") }}</h3>
+            <p>{{ _("The personal data provided in the contact form will be processed by SYCO BUSINESS & INVESTMENT to respond to user inquiries and to send commercial information, provided that the user checks the corresponding acceptance box. The processing of this data is based on the consent of the data subject when submitting the form and accepting the Privacy Policy.") }}</p>
+            <p>{{ _("Personal data will be processed for the time strictly necessary to attend to the user's request.") }}</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">3. {{ _("Data Disclosure to Third Parties") }}</h2>
+            <p>{{ _("SYCO BUSINESS & INVESTMENT will not transfer personal data to third parties, except by legal obligation. However, for the proper provision of services, SYCO BUSINESS & INVESTMENT may communicate certain personal data to third parties that provide services, solely for the proper functioning of the company.") }}</p>
+            <p>{{ _("All data communications will be carried out in compliance with data protection regulations and through data processing agreements with the third parties involved.") }}</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">4. {{ _("Exercise of Rights") }}</h2>
+            <p>{{ _("Users have the right to access, rectify, delete, oppose, limit processing and portability of their personal data, as well as the possibility to revoke their consent. These rights can be exercised by sending an email to info@fincagarval.com, including name, surname, address, right to be exercised and content of the request.") }}</p>
+            <p>{{ _("In case of not obtaining satisfaction in the exercise of their rights, users have the right to file a complaint with the Spanish Data Protection Agency.") }}</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">5. {{ _("Data Maintenance") }}</h2>
+            <p>{{ _("Users are responsible for keeping the data provided to SYCO BUSINESS & INVESTMENT up to date. SYCO BUSINESS & INVESTMENT is not responsible for damages arising from the lack of veracity, inaccuracy, lack of validity or authenticity of the data provided by users.") }}</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">6. {{ _("Cookies") }}</h2>
+            <p>{{ _("For information about the use of cookies on our website, please see our Cookie Policy.") }}</p>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+{% endblock %}

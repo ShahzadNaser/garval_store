@@ -1,0 +1,444 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Checkout") }} - Finca Garval{% endblock %}
+
+{% block body_class %}checkout-page{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header" style="height: 200px;">
+    <div class="page-header-bg">
+        <img src="/assets/garval_store/images/shop-header.jpg" alt="Checkout">
+        <div class="page-header-overlay"></div>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title" data-i18n="checkout.title">
+            {{ _("Checkout") }}
+        </h1>
+    </div>
+</section>
+
+<!-- Checkout Section -->
+<section class="checkout-container">
+    <div class="container">
+        <form id="checkoutForm">
+            <input type="hidden" name="csrf_token" value="{{ frappe.session.csrf_token }}">
+
+            <div class="checkout-grid">
+                <!-- Checkout Form -->
+                <div class="checkout-form">
+                    <!-- Contact Information -->
+                    <div class="checkout-section">
+                        <h3 class="checkout-section-title">
+                            <i class="fas fa-user"></i>
+                            {{ _("Contact Information") }}
+                        </h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="full_name">
+                                    {{ _("Full Name") }} *
+                                </label>
+                                <input type="text" id="full_name" name="full_name" class="form-control" required
+                                       value="{{ customer.customer_name if customer else '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="email">
+                                    {{ _("Email") }} *
+                                </label>
+                                <input type="email" id="email" name="email" class="form-control" required
+                                       value="{{ frappe.session.user if frappe.session.user != 'Guest' else '' }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="phone">
+                                    {{ _("Phone") }} *
+                                </label>
+                                <input type="tel" id="phone" name="phone" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="checkout-section">
+                        <h3 class="checkout-section-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ _("Shipping Address") }}
+                        </h3>
+
+                        {% if addresses %}
+                        <div class="form-group">
+                            <label class="form-label">
+                                {{ _("Select an address") }} *
+                            </label>
+                            <div class="address-selection">
+                                {% for addr in addresses %}
+                                <label class="address-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm); cursor: pointer; {% if not loop.last %}margin-bottom: var(--spacing-md);{% endif %}">
+                                    <input type="radio" name="selected_address" value="{{ addr.name }}" {% if loop.first %}checked{% endif %} required
+                                           data-address="{{ addr.address_line1 }}"
+                                           data-address2="{{ addr.address_line2 or '' }}"
+                                           data-city="{{ addr.city }}"
+                                           data-state="{{ addr.state }}"
+                                           data-pincode="{{ addr.pincode }}"
+                                           data-country="{{ addr.country }}"
+                                           data-phone="{{ addr.phone or '' }}">
+                                    <div style="flex: 1;">
+                                        <strong>{{ addr.address_title }}</strong>
+                                        <p style="margin: 5px 0 0 0; font-size: var(--font-size-sm); color: var(--color-text-light);">
+                                            {{ addr.address_line1 }}{% if addr.address_line2 %}, {{ addr.address_line2 }}{% endif %}<br>
+                                            {{ addr.city }}, {{ addr.state }} {{ addr.pincode }}<br>
+                                            {{ addr.country }}
+                                            {% if addr.phone %}<br>{{ _("Tel:") }} {{ addr.phone }}{% endif %}
+                                        </p>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <p style="padding: var(--spacing-md); background: var(--color-gray-100); border-radius: var(--radius-sm); text-align: center;">
+                            {{ _("You don't have any saved addresses.") }}
+                        </p>
+                        {% endif %}
+
+                        <a href="/my-account?lang={{ lang }}#addresses" class="btn btn-outline" style="width: 100%; margin-top: var(--spacing-md);">
+                            <i class="fas fa-cog"></i>
+                            {{ _("Manage my addresses") }}
+                        </a>
+                    </div>
+
+                    <!-- Order Notes -->
+                    <div class="checkout-section">
+                        <h3 class="checkout-section-title">
+                            <i class="fas fa-sticky-note"></i>
+                            {{ _("Order Notes") }}
+                        </h3>
+
+                        <div class="form-group">
+                            <label class="form-label" for="notes">
+                                {{ _("Additional notes (optional)") }}
+                            </label>
+                            <textarea id="notes" name="notes" class="form-control" rows="3"
+                                      placeholder="{{ _('Special delivery instructions...') }}"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="checkout-section">
+                        <h3 class="checkout-section-title">
+                            <i class="fas fa-credit-card"></i>
+                            {{ _("Payment Method") }}
+                        </h3>
+
+                                                <div class="payment-methods">
+                            {% for gateway in payment_gateways %}
+                            <label class="payment-option" style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm); cursor: pointer; {% if not loop.last %}margin-bottom: var(--spacing-md);{% endif %}">
+                                <input type="radio" name="payment_method" value="{{ gateway.name }}" {% if loop.first %}checked{% endif %} data-gateway="{{ gateway.gateway }}">
+
+                                {% if gateway.gateway == "Stripe" %}
+                                <i class="fab fa-cc-stripe" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
+                                {% elif gateway.name == "bank_transfer" %}
+                                <i class="fas fa-university" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
+                                {% elif gateway.name == "cash_on_delivery" %}
+                                <i class="fas fa-money-bill-wave" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
+                                {% else %}
+                                <i class="fas fa-credit-card" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
+                                {% endif %}
+
+                                <div>
+                                    <strong>{{ gateway.label }}</strong>
+                                    {% if gateway.description %}
+                                    <p style="margin: 0; font-size: var(--font-size-sm); color: var(--color-text-light);">
+                                        {{ gateway.description }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="checkout-section" style="box-shadow: none; padding: 0;">
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms">
+                                {{ _("I have read and accept the") }}
+                                <a href="https://fincagarval.com/aviso-legal/" target="_blank" rel="noopener">{{ _("Terms and Conditions") }}</a>
+                                {{ _("and the") }}
+                                <a href="https://fincagarval.com/politica-privacidad/" target="_blank" rel="noopener">{{ _("Privacy Policy") }}</a> *
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div>
+                    <div class="order-summary">
+                        <h3 style="margin-bottom: var(--spacing-lg);">
+                            {{ _("Order Summary") }}
+                        </h3>
+
+                        <div class="order-items" id="checkoutItems">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="cart-totals-row">
+                            <span>{{ _("Subtotal") }}</span>
+                            <span id="checkoutSubtotal">{{ currency_symbol }}0.00</span>
+                        </div>
+
+                        <div id="taxesContainer">
+                            <!-- Taxes will be populated dynamically -->
+                        </div>
+
+                        <div class="cart-totals-row" id="shippingRow" style="display: none;">
+                            <span>{{ _("Shipping") }}</span>
+                            <span id="checkoutShipping">{{ currency_symbol }}0.00</span>
+                        </div>
+
+                        <div class="cart-totals-row" id="codFeeRow" style="display: none;">
+                            <span>{{ _("COD Fee") }}</span>
+                            <span>{{ currency_symbol }}3.00</span>
+                        </div>
+
+                        <div class="cart-totals-row total">
+                            <span>{{ _("Total") }}</span>
+                            <span id="checkoutTotal">{{ currency_symbol }}0.00</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--spacing-lg);" id="placeOrderBtn" data-text-payment="{{ _('Proceed to Payment') }}" data-text-order="{{ _('Place Order') }}">
+                            <i class="fas fa-lock"></i>
+                            <span id="btnText">{{ _("Place Order") }}</span>
+                        </button>
+
+                        <p style="text-align: center; margin-top: var(--spacing-md); font-size: var(--font-size-sm); color: var(--color-text-muted);">
+                            <i class="fas fa-shield-alt"></i>
+                            {{ _("100% secure payment") }}
+                        </p>
+                    </div>
+
+                    <a href="/cart" style="display: block; text-align: center; margin-top: var(--spacing-lg); color: var(--color-primary);">
+                        <i class="fas fa-arrow-left"></i>
+                        {{ _("Back to Cart") }}
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    renderCheckoutItems();
+    setupPaymentToggle();
+    setupFormSubmit();
+});
+
+function renderCheckoutItems() {
+    const container = document.getElementById('checkoutItems');
+    const items = GarvalStore.Cart.items;
+
+    if (items.length === 0) {
+        window.location.href = '/cart';
+        return;
+    }
+
+    container.innerHTML = items.map(item => {
+        // Use placeholder for any missing/broken images
+        const placeholder = '/assets/garval_store/images/product-placeholder.jpg';
+        let imageUrl = item.image;
+
+        // Check if image is missing, null, or invalid
+        if (!imageUrl || imageUrl === 'None' || imageUrl === 'null' || imageUrl === 'undefined') {
+            imageUrl = placeholder;
+        }
+
+        return `
+        <div class="order-item">
+            <div class="order-item-image">
+                <img src="${imageUrl}"
+                     alt="${item.name}"
+                     onerror="this.onerror=null; this.src='${placeholder}';">
+            </div>
+            <div class="order-item-details">
+                <div class="order-item-title">${item.name}</div>
+                <div class="order-item-qty">x${item.quantity}</div>
+            </div>
+            <div class="order-item-price">{{ currency_symbol }}${(item.price * item.quantity).toFixed(2)}</div>
+        </div>
+        `;
+    }).join('');
+
+    updateCheckoutTotals();
+}
+
+async function updateCheckoutTotals() {
+    const subtotal = GarvalStore.Cart.getTotal();
+    const codFee = document.querySelector('input[name="payment_method"]:checked')?.value === 'cash_on_delivery' ? 3 : 0;
+    
+    // Update subtotal immediately
+    document.getElementById('checkoutSubtotal').textContent = `{{ currency_symbol }}${subtotal.toFixed(2)}`;
+    
+    // Fetch taxes and charges
+    try {
+        const response = await fetch(`/api/method/garval_store.api.checkout.calculate_taxes?subtotal=${subtotal}`);
+        const result = await response.json();
+        
+        if (result.message && result.message.success) {
+            const taxData = result.message;
+            
+            // Display taxes
+            const taxesContainer = document.getElementById('taxesContainer');
+            taxesContainer.innerHTML = '';
+            
+            taxData.taxes.forEach(tax => {
+                const taxRow = document.createElement('div');
+                taxRow.className = 'cart-totals-row';
+                const taxLabel = tax.type === 'percentage' 
+                    ? `${tax.description} (${tax.rate}%)`
+                    : tax.description;
+                taxRow.innerHTML = `
+                    <span>${taxLabel}</span>
+                    <span>{{ currency_symbol }}${tax.amount.toFixed(2)}</span>
+                `;
+                taxesContainer.appendChild(taxRow);
+            });
+            
+            // Display shipping
+            const shippingRow = document.getElementById('shippingRow');
+            const checkoutShipping = document.getElementById('checkoutShipping');
+            if (taxData.shipping > 0) {
+                checkoutShipping.textContent = `{{ currency_symbol }}${taxData.shipping.toFixed(2)}`;
+                shippingRow.style.display = 'flex';
+            } else {
+                checkoutShipping.textContent = '{{ _("Free") }}';
+                shippingRow.style.display = 'flex';
+            }
+            
+            // Calculate total: subtotal + taxes + shipping + COD fee
+            const total = taxData.grand_total + codFee;
+            document.getElementById('checkoutTotal').textContent = `{{ currency_symbol }}${total.toFixed(2)}`;
+        } else {
+            // Fallback if API fails
+            const total = subtotal + codFee;
+            document.getElementById('checkoutTotal').textContent = `{{ currency_symbol }}${total.toFixed(2)}`;
+        }
+    } catch (error) {
+        // Fallback if API fails
+        const total = subtotal + codFee;
+        document.getElementById('checkoutTotal').textContent = `€${total.toFixed(2)}`;
+    }
+}
+
+function setupPaymentToggle() {
+    const paymentInputs = document.querySelectorAll('input[name="payment_method"]');
+    const codFeeRow = document.getElementById('codFeeRow');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    const btnText = document.getElementById('btnText');
+
+    paymentInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            codFeeRow.style.display = this.value === 'cash_on_delivery' ? 'flex' : 'none';
+            updateCheckoutTotals();
+            
+            // Update button text based on payment method
+            const gateway = this.getAttribute('data-gateway');
+            if (gateway === 'Stripe' || gateway === 'PayPal') {
+                btnText.textContent = placeOrderBtn.getAttribute('data-text-payment');
+            } else {
+                btnText.textContent = placeOrderBtn.getAttribute('data-text-order');
+            }
+        });
+    });
+    
+    // Set initial button text
+    const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+    if (selectedPayment) {
+        const gateway = selectedPayment.getAttribute('data-gateway');
+        if (gateway === 'Stripe' || gateway === 'PayPal') {
+            btnText.textContent = placeOrderBtn.getAttribute('data-text-payment');
+        }
+    }
+}
+
+function setupFormSubmit() {
+    const form = document.getElementById('checkoutForm');
+    const submitBtn = document.getElementById('placeOrderBtn');
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const originalText = submitBtn.innerHTML;
+        const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+        const gateway = selectedPayment?.getAttribute('data-gateway');
+        const processingText = (gateway === 'Stripe' || gateway === 'PayPal') 
+            ? 'Processing payment...'
+            : 'Processing order...';
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + processingText;
+        submitBtn.disabled = true;
+
+        const formData = new FormData(form);
+
+        // Get selected address ID
+        const selectedAddressInput = document.querySelector('input[name="selected_address"]:checked');
+        if (!selectedAddressInput) {
+            alert('Please select a shipping address');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        const customerInfo = {
+            full_name: formData.get('full_name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            selected_address: selectedAddressInput.value,
+            payment_method: formData.get('payment_method'),
+            notes: formData.get('notes') || ''
+        };
+
+        try {
+            const response = await fetch('/api/method/garval_store.api.checkout.create_order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Frappe-CSRF-Token': formData.get('csrf_token')
+                },
+                body: JSON.stringify({
+                    customer_info: customerInfo,
+                    items: GarvalStore.Cart.items,
+                    total: GarvalStore.Cart.getTotal()
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.message && result.message.success) {
+                // Clear cart
+                GarvalStore.Cart.clear();
+
+                // If payment URL exists, redirect to payment gateway
+                if (result.message.payment_url) {
+                    window.location.href = result.message.payment_url;
+                } else {
+                    // Redirect to confirmation for manual payments
+                    window.location.href = `/order_confirmation?order=${result.message.order_id}`;
+                }
+            } else {
+                const errorMsg = result.message?.error || result.exc || result._server_messages || 'Error processing order';
+                throw new Error(errorMsg);
+            }
+        } catch (error) {
+            alert(error.message);
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+}
+</script>
+{% endblock %}

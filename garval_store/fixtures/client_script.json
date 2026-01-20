@@ -1,0 +1,10 @@
+[
+    {
+        "doctype": "Client Script",
+        "name": "Payment Request - Order Confirmation Button",
+        "dt": "Payment Request",
+        "view": "Form",
+        "enabled": 1,
+        "script": "frappe.ui.form.on('Payment Request', {\n    refresh: function(frm) {\n        // Show button only when status is 'Paid' and it's a submitted document\n        if (frm.doc.status === 'Paid' && frm.doc.docstatus === 1) {\n            frm.add_custom_button(__('Send Order Confirmation'), function() {\n                frappe.call({\n                    method: 'garval_store.order_confirmation.send_order_confirmation',\n                    args: {\n                        payment_request_name: frm.doc.name\n                    },\n                    freeze: true,\n                    freeze_message: __('Sending Order Confirmation...'),\n                    callback: function(r) {\n                        if (r.message && r.message.success) {\n                            frappe.show_alert({\n                                message: __('Order confirmation sent to {0}', [r.message.email]),\n                                indicator: 'green'\n                            });\n                        }\n                    }\n                });\n            }, __('Actions'));\n        }\n    }\n});"
+    }
+]

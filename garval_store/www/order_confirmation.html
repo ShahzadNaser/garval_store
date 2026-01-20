@@ -1,0 +1,86 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Order Confirmed") }} - Finca Garval{% endblock %}
+
+{% block body_class %}confirmation-page{% endblock %}
+
+{% block content %}
+<section class="auth-container" style="min-height: calc(100vh - 200px);">
+    <div class="auth-card" style="max-width: 600px; text-align: center;">
+        <div style="width: 100px; height: 100px; background: var(--color-success); border-radius: 50%; margin: 0 auto var(--spacing-xl); display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-check" style="font-size: 50px; color: white;"></i>
+        </div>
+
+        <h1 style="font-family: var(--font-primary); font-size: var(--font-size-3xl); margin-bottom: var(--spacing-md);">
+            {{ _("Thank you for your order!") }}
+        </h1>
+
+        {% if order %}
+        <p style="color: var(--color-text-light); font-size: var(--font-size-lg); margin-bottom: var(--spacing-xl);">
+            {{ _("Your order") }}
+            <strong>#{{ order.name }}</strong>
+            {{ _("has been received.") }}
+        </p>
+
+        <div style="background: var(--color-gray-100); padding: var(--spacing-xl); border-radius: var(--radius-md); text-align: left; margin-bottom: var(--spacing-xl);">
+            <h3 style="margin-bottom: var(--spacing-md);">{{ _("Order Summary") }}</h3>
+
+            {% for item in order.items %}
+            <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--color-gray-300);">
+                <span>{{ item.item_name }} x {{ item.qty|int }}</span>
+                <span>{{ currency_symbol }}{{ "%.2f"|format(item.amount) }}</span>
+            </div>
+            {% endfor %}
+
+            {% if order.net_total or (order.taxes and order.taxes|length > 0) %}
+            <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-300);">
+                {% if order.net_total %}
+                <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0;">
+                    <span>{{ _("Subtotal") }}</span>
+                    <span>{{ currency_symbol }}{{ "%.2f"|format(order.net_total) }}</span>
+                </div>
+                {% endif %}
+                
+                {% if order.taxes %}
+                    {% for tax in order.taxes %}
+                        {% if tax.tax_amount %}
+                        <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0;">
+                            <span>{{ tax.description }}{% if tax.rate %} ({{ tax.rate }}%){% endif %}</span>
+                            <span>{{ currency_symbol }}{{ "%.2f"|format(tax.tax_amount) }}</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div style="display: flex; justify-content: space-between; padding: var(--spacing-md) 0; font-size: var(--font-size-lg); font-weight: 600; border-top: 2px solid var(--color-gray-400); margin-top: var(--spacing-sm);">
+                <span>{{ _("Total") }}</span>
+                <span style="color: var(--color-primary);">{{ currency_symbol }}{{ "%.2f"|format(order.grand_total) }}</span>
+            </div>
+        </div>
+
+        <p style="color: var(--color-text-light); margin-bottom: var(--spacing-xl);">
+            {{ _("We've sent a confirmation email to you.") }}
+        </p>
+        
+        {% else %}
+        <p style="color: var(--color-text-light); font-size: var(--font-size-lg); margin-bottom: var(--spacing-xl);">
+            {{ _("Your order has been processed successfully.") }}
+        </p>
+        {% endif %}
+
+        <div style="display: flex; gap: var(--spacing-md); justify-content: center; flex-wrap: wrap;">
+            <a href="/shop" class="btn btn-primary">
+                {{ _("Continue Shopping") }}
+            </a>
+            {% if frappe.session.user != 'Guest' %}
+            <a href="/my-account" class="btn btn-outline">
+                {{ _("View My Orders") }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Accessibility Statement") }} - Finca Garval{% endblock %}
+
+{% block body_class %}legal-page{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header" style="height: 200px;">
+    <div class="page-header-bg">
+        <img src="/assets/garval_store/images/politicas-web-header.jpg" alt="{{ _('Accessibility Statement') }}">
+        <div class="page-header-overlay"></div>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title">
+            {{ _("Accessibility Statement") }}
+        </h1>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="legal-content" style="padding: var(--spacing-xl) 0;">
+    <div class="container" style="max-width: 900px;">
+        <div class="legal-text" style="background: white; padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            
+            {% if current_lang == 'es' %}
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">POLÍTICA DE ACCESIBILIDAD</h2>
+            <p>La empresa SYCO BUSINESS & INVESTMENT S.L. se compromete a hacer accesible su sitio web de conformidad con el Real Decreto 1112/2018, de 7 de septiembre, sobre la accesibilidad de los sitios web y aplicaciones para dispositivos móviles del sector público, o desarrollos financiados desde Europa.</p>
+            <p>Esta declaración de accesibilidad se aplica al sitio web https://fincagarval.com/ excluyendo el contenido incrustado de otros dominios.</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">Estado de Conformidad</h3>
+            <p>Este sitio web es Parcialmente conforme con el RD 1112/2018 debido a la falta de conformidad de los aspectos indicados a continuación.</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">Contenido No Accesible</h3>
+            <p>El contenido que se enumera a continuación no es accesible por las siguientes razones:</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">No Conformidad:</h4>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>Puede haber algunas imágenes cuya alternativa no está implementada o no es correcta - Requisito 9.1.1.1 Contenido no textual UNE-EN 301549:2022</li>
+                <li>En los formularios, puede haber campos que no han sido facilitados para el llenado a través de sistemas automáticos - Requisito 9.1.3.5 Identificar el propósito de la entrada UNE-EN 301549:2022</li>
+                <li>Podría haber errores de edición ocasionales en algunas páginas web.</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">Carga Desproporcionada:</h4>
+            <p>No aplicable.</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">Contenido Excluido del Ámbito de Aplicación:</h4>
+            <p>Podría haber páginas web archivadas que no cumplen completamente con todos los requisitos de accesibilidad.</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">Preparación de esta Declaración de Accesibilidad</h3>
+            <p>Esta declaración fue preparada el 16 de febrero de 2024.</p>
+            <p>El método utilizado para preparar la declaración ha sido una autoevaluación realizada por la propia organización.</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">Observaciones e Información de Contacto</h3>
+            <p>Puede realizar comunicaciones sobre los requisitos de accesibilidad (artículo 10.2.a) del RD 1112/2018) tales como:</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>Informar sobre cualquier posible incumplimiento por parte de este sitio web</li>
+                <li>Transmitir otras dificultades para acceder al contenido</li>
+                <li>Realizar cualquier otra consulta o sugerencia de mejora con respecto a la accesibilidad del sitio web</li>
+            </ul>
+            <p style="margin-top: var(--spacing-md);">A través del siguiente formulario de contacto o llamando al teléfono +34 603 578 577 de lunes a viernes de 9:00 a.m. a 2:00 p.m. y de 5:30 p.m. a 8:00 p.m.</p>
+            <p>Puede presentar:</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>Una queja con respecto al cumplimiento de los requisitos del RD 1112/2018</li>
+                <li>Una solicitud de información accesible con respecto a:
+                    <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-sm);">
+                        <li>Contenido que está excluido del ámbito de aplicación del RD 1112/2018 según se establece en el artículo 3, sección 4.</li>
+                        <li>Contenido que está exento del cumplimiento de los requisitos de accesibilidad debido a que impone una carga desproporcionada.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p style="margin-top: var(--spacing-md);">En la solicitud de información accesible, los hechos, razones y solicitud deben especificarse claramente para permitir la verificación de que es una solicitud razonable y legítima.</p>
+            {% else %}
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("ACCESSIBILITY POLICY") }}</h2>
+            <p>{{ _("The company SYCO BUSINESS & INVESTMENT S.L. is committed to making its website accessible in accordance with Royal Decree 1112/2018, of September 7, on the accessibility of websites and applications for mobile devices in the public sector, or developments financed from Europe.") }}</p>
+            <p>{{ _("This accessibility statement applies to the website https://fincagarval.com/ excluding embedded content from other domains.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("Compliance Status") }}</h3>
+            <p>{{ _("This website is Partially compliant with RD 1112/2018 due to the lack of compliance of the aspects indicated below.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("Inaccessible Content") }}</h3>
+            <p>{{ _("The content listed below is not accessible for the following reasons:") }}</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">{{ _("Non-compliance") }}:</h4>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>{{ _("There may be some images whose alternative is not implemented or is not correct - Requirement 9.1.1.1 Non-textual content UNE-EN 301549:2022") }}</li>
+                <li>{{ _("In forms, there may be fields that have not been facilitated for filling through automatic systems - Requirement 9.1.3.5 Identify the purpose of the input UNE-EN 301549:2022") }}</li>
+                <li>{{ _("There could be occasional editing errors on some web pages.") }}</li>
+            </ul>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">{{ _("Disproportionate burden") }}:</h4>
+            <p>{{ _("Not applicable.") }}</p>
+
+            <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-md);">{{ _("Content excluded from the scope of application") }}:</h4>
+            <p>{{ _("There could be archived web pages that do not fully comply with all accessibility requirements.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("Preparation of this accessibility statement") }}</h3>
+            <p>{{ _("This statement was prepared on February 16, 2024.") }}</p>
+            <p>{{ _("The method used to prepare the statement has been a self-assessment carried out by the organization itself.") }}</p>
+
+            <h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("Observations and contact information") }}</h3>
+            <p>{{ _("You can make communications about accessibility requirements (article 10.2.a) of RD 1112/2018) such as:") }}</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>{{ _("Report any possible breach by this website") }}</li>
+                <li>{{ _("Convey other difficulties accessing content") }}</li>
+                <li>{{ _("Make any other query or suggestion for improvement regarding the accessibility of the website") }}</li>
+            </ul>
+            <p style="margin-top: var(--spacing-md);">{{ _("Through the following contact form or by calling the phone +34 603 578 577 Monday to Friday 9:00am - 2:00pm and 5:30pm - 8:00pm") }}</p>
+            <p>{{ _("You can submit:") }}</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li>{{ _("A complaint regarding compliance with the requirements of RD 1112/2018") }}</li>
+                <li>{{ _("A request for accessible information regarding:") }}
+                    <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-sm);">
+                        <li>{{ _("Content that is excluded from the scope of application of RD 1112/2018 as established in article 3, section 4.") }}</li>
+                        <li>{{ _("Content that is exempt from compliance with accessibility requirements due to imposing a disproportionate burden.") }}</li>
+                    </ul>
+                </li>
+            </ul>
+            <p style="margin-top: var(--spacing-md);">{{ _("In the request for accessible information, the facts, reasons and request must be clearly specified to allow verification that it is a reasonable and legitimate request.") }}</p>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+{% endblock %}

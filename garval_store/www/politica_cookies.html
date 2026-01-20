@@ -1,0 +1,256 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Cookie Policy") }} - Finca Garval{% endblock %}
+
+{% block body_class %}legal-page{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header" style="height: 200px;">
+    <div class="page-header-bg">
+        <img src="/assets/garval_store/images/politicas-web-header.jpg" alt="{{ _('Cookie Policy') }}">
+        <div class="page-header-overlay"></div>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title">
+            {{ _("Cookie Policy") }}
+        </h1>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="legal-content" style="padding: var(--spacing-xl) 0;">
+    <div class="container" style="max-width: 900px;">
+        <div class="legal-text" style="background: white; padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            
+            {% if current_lang == 'es' %}
+            <p style="margin-bottom: var(--spacing-lg);"><strong>Fecha de entrada en vigor: 16-feb-2024</strong><br>
+            <strong>Última actualización: 16-feb-2024</strong></p>
+
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">¿Qué son las cookies?</h2>
+            <p>Esta Política de Cookies explica qué son las cookies y cómo las utilizamos, los tipos de cookies que utilizamos, es decir, la información que recopilamos a través de las cookies y cómo se utiliza esa información, y cómo gestionar la configuración de cookies.</p>
+            <p>Las cookies son pequeños archivos de texto que se utilizan para almacenar pequeñas piezas de información. Se almacenan en su dispositivo cuando el sitio web se carga en su navegador. Estas cookies nos ayudan a hacer que el sitio web funcione correctamente, hacerlo más seguro, proporcionar una mejor experiencia de usuario y comprender cómo funciona el sitio web y analizar qué funciona y qué aspectos necesitan mejora.</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">¿Cómo utilizamos las cookies?</h2>
+            <p>Como la mayoría de los servicios en línea, nuestro sitio web utiliza cookies de primera parte y de terceros para varios propósitos. Las cookies de primera parte son principalmente necesarias para que el sitio web funcione correctamente y no recopilan ningún dato personalmente identificable.</p>
+            <p>Las cookies de terceros utilizadas en nuestro sitio web se utilizan principalmente para comprender cómo funciona el sitio web, cómo interactúa con nuestro sitio web, mantener nuestros servicios seguros, proporcionar anuncios que sean relevantes para usted y, en última instancia, brindarle una mejor y más rápida experiencia de usuario y ayudar a acelerar sus futuras interacciones con nuestro sitio web.</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">Tipos de cookies que utilizamos</h2>
+            <p>Utilizamos varios tipos de cookies en nuestro sitio web para diferentes propósitos. Estos incluyen:</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li><strong>Cookies Esenciales:</strong> Estas cookies son necesarias para que el sitio web funcione y no se pueden desactivar en nuestros sistemas.</li>
+                <li><strong>Cookies de Análisis:</strong> Estas cookies nos ayudan a comprender cómo los visitantes interactúan con nuestro sitio web recopilando e informando información de forma anónima.</li>
+                <li><strong>Cookies Funcionales:</strong> Estas cookies permiten que el sitio web proporcione funcionalidad mejorada y personalización.</li>
+            </ul>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">Gestión de Preferencias de Cookies</h2>
+            <p>Puede cambiar sus preferencias de cookies en cualquier momento haciendo clic en el botón de configuración de cookies. Esto le permitirá volver a visitar el banner de consentimiento de cookies y cambiar sus preferencias o retirar su consentimiento inmediatamente.</p>
+            
+            <div style="margin: var(--spacing-xl) 0; text-align: center;">
+                <button id="cookieSettingsBtn" class="btn btn-primary" style="padding: 12px 30px; font-size: 16px; cursor: pointer;">
+                    <i class="fas fa-cog"></i> Configuración de Cookies
+                </button>
+            </div>
+            <p>Además, diferentes navegadores ofrecen diferentes métodos para bloquear y eliminar las cookies utilizadas por los sitios web. Puede cambiar la configuración de su navegador para bloquear o eliminar cookies. A continuación se encuentran enlaces a documentos de soporte sobre cómo gestionar y eliminar cookies de los principales navegadores web.</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li><a href="https://support.google.com/accounts/answer/32050" target="_blank" rel="noopener">Chrome</a></li>
+                <li><a href="https://support.apple.com/en-in/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari</a></li>
+                <li><a href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox" target="_blank" rel="noopener">Firefox</a></li>
+                <li><a href="https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc" target="_blank" rel="noopener">Internet Explorer</a></li>
+            </ul>
+            <p style="margin-top: var(--spacing-md);">Si utiliza cualquier otro navegador, consulte la documentación oficial de su navegador.</p>
+            {% else %}
+            <p style="margin-bottom: var(--spacing-lg);"><strong>{{ _("Effective date") }}: 16-{{ _("Feb") }}-2024</strong><br>
+            <strong>{{ _("Last update") }}: 16-{{ _("Feb") }}-2024</strong></p>
+
+            <h2 style="margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("What are cookies?") }}</h2>
+            <p>{{ _("This Cookie Policy explains what cookies are and how we use them, the types of cookies we use, i.e., the information we collect through cookies and how that information is used, and how to manage cookie settings.") }}</p>
+            <p>{{ _("Cookies are small text files that are used to store small pieces of information. They are stored on your device when the website loads in your browser. These cookies help us make the website work properly, make it more secure, provide a better user experience, and understand how the website works and analyze what works and what aspects need improvement.") }}</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("How do we use cookies?") }}</h2>
+            <p>{{ _("Like most online services, our website uses first-party and third-party cookies for various purposes. First-party cookies are mostly necessary for the website to function properly and do not collect any personally identifiable data.") }}</p>
+            <p>{{ _("Third-party cookies used on our website are mainly used to understand how the website works, how you interact with our website, keep our services secure, provide advertisements that are relevant to you, and ultimately provide you with a better and faster user experience and help speed up your future interactions with our website.") }}</p>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("Types of cookies we use") }}</h2>
+            <p>{{ _("We use various types of cookies on our website for different purposes. These include:") }}</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li><strong>{{ _("Essential Cookies") }}:</strong> {{ _("These cookies are necessary for the website to function and cannot be disabled in our systems.") }}</li>
+                <li><strong>{{ _("Analytics Cookies") }}:</strong> {{ _("These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously.") }}</li>
+                <li><strong>{{ _("Functional Cookies") }}:</strong> {{ _("These cookies enable the website to provide enhanced functionality and personalization.") }}</li>
+            </ul>
+
+            <h2 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); color: var(--color-primary);">{{ _("Managing Cookie Preferences") }}</h2>
+            <p>{{ _("You can change your cookie preferences at any time by clicking the cookie settings button. This will allow you to revisit the cookie consent banner and change your preferences or withdraw your consent immediately.") }}</p>
+            
+            <div style="margin: var(--spacing-xl) 0; text-align: center;">
+                <button id="cookieSettingsBtn" class="btn btn-primary" style="padding: 12px 30px; font-size: 16px; cursor: pointer;">
+                    <i class="fas fa-cog"></i> {{ _("Cookie Settings") }}
+                </button>
+            </div>
+            <p>{{ _("Additionally, different browsers offer different methods for blocking and deleting cookies used by websites. You can change your browser settings to block or delete cookies. Below are links to support documents on how to manage and delete cookies from major web browsers.") }}</p>
+            <ul style="margin-left: var(--spacing-lg); margin-top: var(--spacing-md);">
+                <li><a href="https://support.google.com/accounts/answer/32050" target="_blank" rel="noopener">Chrome</a></li>
+                <li><a href="https://support.apple.com/en-in/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari</a></li>
+                <li><a href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox" target="_blank" rel="noopener">Firefox</a></li>
+                <li><a href="https://support.microsoft.com/en-us/topic/how-to-delete-cookie-files-in-internet-explorer-bca9446f-d873-78de-77ba-d42645fa52fc" target="_blank" rel="noopener">Internet Explorer</a></li>
+            </ul>
+            <p style="margin-top: var(--spacing-md);">{{ _("If you use any other browser, please consult your browser's official documentation.") }}</p>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+<!-- Cookie Settings Modal -->
+<div id="cookieSettingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: var(--spacing-xl); border-radius: var(--radius-md); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+            <h2 style="margin: 0; color: var(--color-primary);">{% if current_lang == 'es' %}Configuración de Cookies{% else %}{{ _("Cookie Settings") }}{% endif %}</h2>
+            <button id="closeCookieModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-text);">&times;</button>
+        </div>
+        
+        <p style="margin-bottom: var(--spacing-lg);">{% if current_lang == 'es' %}Gestione sus preferencias de cookies. Puede habilitar o deshabilitar diferentes tipos de cookies a continuación.{% else %}{{ _("Manage your cookie preferences. You can enable or disable different types of cookies below.") }}{% endif %}</p>
+        
+        <div style="margin-bottom: var(--spacing-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-md); background: var(--color-gray-100); border-radius: var(--radius-sm); margin-bottom: var(--spacing-md);">
+                <div>
+                    <strong>{% if current_lang == 'es' %}Cookies Esenciales{% else %}{{ _("Essential Cookies") }}{% endif %}</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; color: var(--color-text-light);">{% if current_lang == 'es' %}Estas cookies son necesarias para que el sitio web funcione y no se pueden desactivar.{% else %}{{ _("These cookies are necessary for the website to function and cannot be disabled.") }}{% endif %}</p>
+                </div>
+                <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                    <input type="checkbox" checked disabled style="opacity: 0; width: 0; height: 0;">
+                    <span style="position: absolute; cursor: not-allowed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--color-primary); border-radius: 26px; opacity: 0.6;">
+                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s;"></span>
+                    </span>
+                </label>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-md); background: var(--color-gray-100); border-radius: var(--radius-sm); margin-bottom: var(--spacing-md);">
+                <div>
+                    <strong>{% if current_lang == 'es' %}Cookies de Análisis{% else %}{{ _("Analytics Cookies") }}{% endif %}</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; color: var(--color-text-light);">{% if current_lang == 'es' %}Estas cookies nos ayudan a comprender cómo los visitantes interactúan con nuestro sitio web.{% else %}{{ _("These cookies help us understand how visitors interact with our website.") }}{% endif %}</p>
+                </div>
+                <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                    <input type="checkbox" id="analyticsCookies" style="opacity: 0; width: 0; height: 0;">
+                    <span class="cookie-toggle" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 26px; transition: 0.4s;">
+                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s;"></span>
+                    </span>
+                </label>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-md); background: var(--color-gray-100); border-radius: var(--radius-sm); margin-bottom: var(--spacing-md);">
+                <div>
+                    <strong>{% if current_lang == 'es' %}Cookies Funcionales{% else %}{{ _("Functional Cookies") }}{% endif %}</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; color: var(--color-text-light);">{% if current_lang == 'es' %}Estas cookies permiten funcionalidad mejorada y personalización.{% else %}{{ _("These cookies enable enhanced functionality and personalization.") }}{% endif %}</p>
+                </div>
+                <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                    <input type="checkbox" id="functionalCookies" style="opacity: 0; width: 0; height: 0;">
+                    <span class="cookie-toggle" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 26px; transition: 0.4s;">
+                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s;"></span>
+                    </span>
+                </label>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: var(--spacing-md); justify-content: flex-end;">
+            <button id="saveCookieSettings" class="btn btn-primary" style="padding: 10px 20px;">{% if current_lang == 'es' %}Guardar Preferencias{% else %}{{ _("Save Preferences") }}{% endif %}</button>
+            <button id="acceptAllCookies" class="btn" style="padding: 10px 20px; background: var(--color-gray-300);">{% if current_lang == 'es' %}Aceptar Todas{% else %}{{ _("Accept All") }}{% endif %}</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currentLang = '{{ current_lang }}';
+    const messages = {
+        'es': {
+            saved: '¡Preferencias de cookies guardadas con éxito!',
+            accepted: '¡Todas las cookies aceptadas!'
+        },
+        'en': {
+            saved: 'Cookie preferences saved successfully!',
+            accepted: 'All cookies accepted!'
+        }
+    };
+    const langMessages = messages[currentLang] || messages['en'];
+    
+    const cookieSettingsBtn = document.getElementById('cookieSettingsBtn');
+    const cookieModal = document.getElementById('cookieSettingsModal');
+    const closeModal = document.getElementById('closeCookieModal');
+    const saveBtn = document.getElementById('saveCookieSettings');
+    const acceptAllBtn = document.getElementById('acceptAllCookies');
+    const analyticsCheckbox = document.getElementById('analyticsCookies');
+    const functionalCheckbox = document.getElementById('functionalCookies');
+    
+    // Load saved preferences
+    function loadCookiePreferences() {
+        const analytics = localStorage.getItem('cookie_analytics') === 'true';
+        const functional = localStorage.getItem('cookie_functional') === 'true';
+        analyticsCheckbox.checked = analytics;
+        functionalCheckbox.checked = functional;
+        updateToggleStyles();
+    }
+    
+    // Update toggle styles
+    function updateToggleStyles() {
+        document.querySelectorAll('.cookie-toggle').forEach((toggle, index) => {
+            const checkbox = index === 0 ? analyticsCheckbox : functionalCheckbox;
+            if (checkbox.checked) {
+                toggle.style.backgroundColor = 'var(--color-primary)';
+                toggle.querySelector('span').style.transform = 'translateX(24px)';
+            } else {
+                toggle.style.backgroundColor = '#ccc';
+                toggle.querySelector('span').style.transform = 'translateX(0)';
+            }
+        });
+    }
+    
+    // Open modal
+    cookieSettingsBtn.addEventListener('click', function() {
+        cookieModal.style.display = 'flex';
+        loadCookiePreferences();
+    });
+    
+    // Close modal
+    closeModal.addEventListener('click', function() {
+        cookieModal.style.display = 'none';
+    });
+    
+    cookieModal.addEventListener('click', function(e) {
+        if (e.target === cookieModal) {
+            cookieModal.style.display = 'none';
+        }
+    });
+    
+    // Toggle checkboxes
+    [analyticsCheckbox, functionalCheckbox].forEach(checkbox => {
+        checkbox.addEventListener('change', updateToggleStyles);
+    });
+    
+    // Save preferences
+    saveBtn.addEventListener('click', function() {
+        localStorage.setItem('cookie_analytics', analyticsCheckbox.checked);
+        localStorage.setItem('cookie_functional', functionalCheckbox.checked);
+        cookieModal.style.display = 'none';
+        alert(langMessages.saved);
+    });
+    
+    // Accept all
+    acceptAllBtn.addEventListener('click', function() {
+        analyticsCheckbox.checked = true;
+        functionalCheckbox.checked = true;
+        updateToggleStyles();
+        localStorage.setItem('cookie_analytics', 'true');
+        localStorage.setItem('cookie_functional', 'true');
+        cookieModal.style.display = 'none';
+        alert(langMessages.accepted);
+    });
+    
+    // Initialize
+    loadCookiePreferences();
+});
+</script>
+{% endblock %}
+

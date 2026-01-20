@@ -1,0 +1,304 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Create Account") }} - Finca Garval{% endblock %}
+
+{% block body_class %}signup-page{% endblock %}
+
+{% block content %}
+<section class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="/assets/garval_store/images/logo-green.png" alt="Finca Garval" class="auth-logo">
+            <h1 class="auth-title" data-i18n="signup.title">
+                {{ _("Create Account") }}
+            </h1>
+            <p class="auth-subtitle" data-i18n="signup.subtitle">
+                {{ _("Register to manage your orders") }}
+            </p>
+        </div>
+
+        <form id="signupForm">
+            <input type="hidden" name="csrf_token" value="{{ frappe.session.csrf_token }}">
+
+            <div class="form-group">
+                <label class="form-label" for="full_name">
+                    {{ _("Full Name") }} *
+                </label>
+                <input type="text" id="full_name" name="full_name" class="form-control" required
+                       placeholder="{{ _('Your full name') }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    {{ _("Email") }} *
+                </label>
+                <input type="email" id="email" name="email" class="form-control" required
+                       placeholder="{{ _('your@email.com') }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="phone">
+                    {{ _("Phone") }}
+                </label>
+                <input type="tel" id="phone" name="phone" class="form-control"
+                       placeholder="{{ _('+34 600 000 000') }}">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="password">
+                        {{ _("Password") }} *
+                    </label>
+                    <input type="password" id="password" name="password" class="form-control" required
+                           minlength="8" placeholder="{{ _('Create a strong password') }}">
+                    {% if enable_password_policy %}
+                    <div class="password-strength-container" style="margin-top: 8px;">
+                        <div class="password-strength-bar" style="height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden;">
+                            <div id="strengthIndicator" style="height: 100%; width: 0%; transition: all 0.3s ease;"></div>
+                        </div>
+                        <small id="strengthText" style="color: #666; font-size: 12px; margin-top: 4px; display: block;"></small>
+                    </div>
+                    <div class="password-requirements" style="margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
+                        <strong style="display: block; margin-bottom: 6px; color: #333;">
+                            {{ _("La contraseña debe:") if lang == "es" else _("Password must:") }}
+                        </strong>
+                        <ul style="margin: 0; padding-left: 18px; color: #666;">
+                            <li id="req-length">{{ _("Tener al menos 8 caracteres") if lang == "es" else _("Be at least 8 characters long") }}</li>
+                            <li id="req-strength">{{ _("Ser lo suficientemente fuerte (evitar palabras comunes)") if lang == "es" else _("Be strong enough (avoid common words)") }}</li>
+                        </ul>
+                        <small style="display: block; margin-top: 6px; color: #888;">
+                            {{ _("Consejo: Use una combinación de letras, números y símbolos") if lang == "es" else _("Tip: Use a mix of letters, numbers, and symbols") }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">
+                        {{ _("Confirm Password") }} *
+                    </label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required
+                           minlength="8" placeholder="{{ _('Repeat password') }}">
+                    <small id="passwordMatchError" style="color: #dc3545; font-size: 12px; margin-top: 4px; display: none;">
+                        {{ _("Las contraseñas no coinciden") if lang == "es" else _("Passwords do not match") }}
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-checkbox">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">
+                        {{ _("I accept the") }}
+                        <a href="#" target="_blank">{{ _("Terms and Conditions") }}</a>
+                        {{ _("and the") }}
+                        <a href="#" target="_blank">{{ _("Privacy Policy") }}</a> *
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-checkbox">
+                    <input type="checkbox" id="newsletter" name="newsletter">
+                    <label for="newsletter">
+                        {{ _("I want to receive offers and news by email") }}
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                {{ _("Create Account") }}
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>
+                {{ _("Already have an account?") }}
+                <a href="/customer-login">{{ _("Login") }}</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const ENABLE_PASSWORD_POLICY = {{ enable_password_policy|tojson }};
+const MINIMUM_PASSWORD_SCORE = {{ minimum_password_score|tojson }};
+const LANG = '{{ lang }}';
+
+// Password strength labels
+const strengthLabels = {
+    0: LANG === 'es' ? 'Muy débil' : 'Very weak',
+    1: LANG === 'es' ? 'Débil' : 'Weak',
+    2: LANG === 'es' ? 'Aceptable' : 'Fair',
+    3: LANG === 'es' ? 'Buena' : 'Good',
+    4: LANG === 'es' ? 'Fuerte' : 'Strong'
+};
+
+const strengthColors = {
+    0: '#dc3545',
+    1: '#fd7e14',
+    2: '#ffc107',
+    3: '#20c997',
+    4: '#28a745'
+};
+
+let currentPasswordScore = 0;
+let passwordCheckTimeout = null;
+
+// Real-time password strength check
+if (ENABLE_PASSWORD_POLICY) {
+    document.getElementById('password').addEventListener('input', function() {
+        const password = this.value;
+        const indicator = document.getElementById('strengthIndicator');
+        const strengthText = document.getElementById('strengthText');
+        const reqLength = document.getElementById('req-length');
+
+        // Update length requirement
+        if (password.length >= 8) {
+            reqLength.style.color = '#28a745';
+            reqLength.innerHTML = '✓ ' + reqLength.textContent.replace('✓ ', '');
+        } else {
+            reqLength.style.color = '#666';
+            reqLength.innerHTML = reqLength.textContent.replace('✓ ', '');
+        }
+
+        if (password.length === 0) {
+            indicator.style.width = '0%';
+            strengthText.textContent = '';
+            currentPasswordScore = 0;
+            return;
+        }
+
+        // Debounce the API call
+        clearTimeout(passwordCheckTimeout);
+        passwordCheckTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch('/api/method/frappe.core.doctype.user.user.test_password_strength', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Frappe-CSRF-Token': document.querySelector('[name="csrf_token"]').value
+                    },
+                    body: JSON.stringify({ new_password: password })
+                });
+
+                const result = await response.json();
+                if (result.message) {
+                    const score = result.message.score || 0;
+                    currentPasswordScore = score;
+                    const feedback = result.message.feedback || {};
+
+                    // Update strength indicator
+                    const widthPercent = ((score + 1) / 5) * 100;
+                    indicator.style.width = widthPercent + '%';
+                    indicator.style.backgroundColor = strengthColors[score];
+
+                    // Update strength text
+                    let text = strengthLabels[score];
+                    if (feedback.warning) {
+                        text += ' - ' + feedback.warning;
+                    }
+                    strengthText.textContent = text;
+                    strengthText.style.color = strengthColors[score];
+
+                    // Update strength requirement
+                    const reqStrength = document.getElementById('req-strength');
+                    if (score >= MINIMUM_PASSWORD_SCORE) {
+                        reqStrength.style.color = '#28a745';
+                        reqStrength.innerHTML = '✓ ' + reqStrength.textContent.replace('✓ ', '');
+                    } else {
+                        reqStrength.style.color = '#666';
+                        reqStrength.innerHTML = reqStrength.textContent.replace('✓ ', '');
+                    }
+                }
+            } catch (error) {
+                console.error('Password strength check failed:', error);
+            }
+        }, 300);
+    });
+}
+
+// Password match validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    const errorEl = document.getElementById('passwordMatchError');
+
+    if (confirmPassword.length > 0 && password !== confirmPassword) {
+        errorEl.style.display = 'block';
+    } else {
+        errorEl.style.display = 'none';
+    }
+});
+
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const form = this;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    // Validate passwords match
+    const password = form.password.value;
+    const confirmPassword = form.confirm_password.value;
+
+    if (password !== confirmPassword) {
+        GarvalStore.Forms.showMessage(form, 'error',
+            LANG === 'es' ? 'Las contraseñas no coinciden' : 'Passwords do not match');
+        return;
+    }
+
+    // Validate password strength if policy is enabled
+    if (ENABLE_PASSWORD_POLICY && currentPasswordScore < MINIMUM_PASSWORD_SCORE) {
+        GarvalStore.Forms.showMessage(form, 'error',
+            LANG === 'es'
+                ? 'La contraseña es demasiado débil. Por favor, elija una contraseña más segura.'
+                : 'Password is too weak. Please choose a stronger password.');
+        return;
+    }
+
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (LANG === 'es' ? 'Creando cuenta...' : 'Creating account...');
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch('/api/method/garval_store.api.auth.signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Frappe-CSRF-Token': formData.get('csrf_token')
+            },
+            body: JSON.stringify({
+                full_name: formData.get('full_name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                password: formData.get('password'),
+                newsletter: formData.get('newsletter') === 'on'
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.message && result.message.success) {
+            GarvalStore.Forms.showMessage(form, 'success',
+                LANG === 'es' ? 'Cuenta creada correctamente. Redirigiendo...' : 'Account created successfully. Redirecting...');
+            setTimeout(() => {
+                window.location.href = '/customer-login';
+            }, 2000);
+        } else {
+            GarvalStore.Forms.showMessage(form, 'error',
+                result.message?.error || (LANG === 'es' ? 'Error al crear la cuenta' : 'Error creating account'));
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        GarvalStore.Forms.showMessage(form, 'error',
+            LANG === 'es' ? 'Error al crear la cuenta' : 'Error creating account');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

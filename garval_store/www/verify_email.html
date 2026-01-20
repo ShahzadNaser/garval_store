@@ -1,0 +1,86 @@
+{% extends "templates/includes/base.html" %}
+
+{% block title %}{{ _("Verify Email") }} - Finca Garval{% endblock %}
+
+{% block body_class %}verify-email-page{% endblock %}
+
+{% block content %}
+<section class="auth-container" style="min-height: calc(100vh - 200px);">
+    <div class="auth-card" style="max-width: 500px; text-align: center;">
+        {% if verification_attempted %}
+            {% if verification_success %}
+                <!-- Success -->
+                <div style="width: 80px; height: 80px; background: var(--color-success, #28a745); border-radius: 50%; margin: 0 auto var(--spacing-xl); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-check" style="font-size: 40px; color: white;"></i>
+                </div>
+
+                {% if already_verified %}
+                <h1 style="font-family: var(--font-primary); font-size: var(--font-size-2xl); margin-bottom: var(--spacing-md);">
+                    {{ _("Already Verified") }}
+                </h1>
+                <p style="color: var(--color-text-light); margin-bottom: var(--spacing-xl);">
+                    {{ _("Your email has already been verified. You can login to your account.") }}
+                </p>
+                {% else %}
+                <h1 style="font-family: var(--font-primary); font-size: var(--font-size-2xl); margin-bottom: var(--spacing-md);">
+                    {{ _("Email Verified!") }}
+                </h1>
+                <p style="color: var(--color-text-light); margin-bottom: var(--spacing-xl);">
+                    {{ _("Your email has been verified successfully. You can now login to your account.") }}
+                </p>
+                {% endif %}
+
+                <a href="/customer-login" class="btn btn-primary" style="width: 100%;">
+                    {{ _("Login to Your Account") }}
+                </a>
+
+            {% else %}
+                <!-- Error -->
+                <div style="width: 80px; height: 80px; background: var(--color-danger, #dc3545); border-radius: 50%; margin: 0 auto var(--spacing-xl); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-times" style="font-size: 40px; color: white;"></i>
+                </div>
+
+                <h1 style="font-family: var(--font-primary); font-size: var(--font-size-2xl); margin-bottom: var(--spacing-md);">
+                    {{ _("Verification Failed") }}
+                </h1>
+                <p style="color: var(--color-text-light); margin-bottom: var(--spacing-xl);">
+                    {{ verification_error or _("The verification link is invalid or has expired.") }}
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                    <a href="/customer-login" class="btn btn-primary" style="width: 100%;">
+                        {{ _("Go to Login") }}
+                    </a>
+                    <a href="/customer-signup" class="btn btn-outline" style="width: 100%;">
+                        {{ _("Create New Account") }}
+                    </a>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <!-- No verification attempted - show info -->
+            <div style="width: 80px; height: 80px; background: var(--color-primary, #33652B); border-radius: 50%; margin: 0 auto var(--spacing-xl); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-envelope" style="font-size: 40px; color: white;"></i>
+            </div>
+
+            <h1 style="font-family: var(--font-primary); font-size: var(--font-size-2xl); margin-bottom: var(--spacing-md);">
+                {{ _("Email Verification") }}
+            </h1>
+            <p style="color: var(--color-text-light); margin-bottom: var(--spacing-xl);">
+                {{ _("Please check your email and click the verification link to activate your account.") }}
+            </p>
+
+            <div style="background: var(--color-gray-100); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-xl);">
+                <p style="margin: 0; font-size: var(--font-size-sm);">
+                    <i class="fas fa-info-circle" style="color: var(--color-primary);"></i>
+                    {{ _("Didn't receive the email? Check your spam folder or request a new verification email from the login page.") }}
+                </p>
+            </div>
+
+            <a href="/customer-login" class="btn btn-primary" style="width: 100%;">
+                {{ _("Go to Login") }}
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

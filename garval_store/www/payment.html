@@ -1,0 +1,156 @@
+{% extends "templates/web.html" %}
+
+{% block title %} Checkout {% endblock %}
+
+{% block header %}{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block script %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>{% include "garval_store/www/payment.js" %}</script>
+{% endblock %}
+
+{%- block page_content -%}
+
+<div class="payment-container" id="payment-section">
+	<div class="col-sm-10 col-sm-offset-2">
+		<h3 class="text-center mt-4 mb-4">
+			{{description}}
+		</h3>
+		<h4 class="text-center text-muted mb-5">
+			Amount: {{amount}}
+		</h4>
+		<form id="payment-form">
+			<div class="form-row row">
+				<div class="group col-12 mb-3">
+					<label>
+						<span>{{ _("Cardholder Name") }}</span>
+						<input
+							id="cardholder-name"
+							name="cardholder-name"
+							class="field form-control"
+							placeholder="{{ _('John Doe') }}"
+							value="{{payer_name}}"
+							required
+						/>
+					</label>
+				</div>
+				<div class="group col-12 mb-3">
+					<label>
+						<span>{{ _("Email Address") }}</span>
+						<input
+							id="cardholder-email"
+							name="cardholder-email"
+							class="field form-control"
+							type="email"
+							placeholder="{{ _('john@example.com') }}"
+							value="{{payer_email}}"
+							required
+						/>
+					</label>
+				</div>
+				<div class="group col-12 mb-3">
+					<label>
+						<span>{{ _("Card Number") }}</span>
+						<div id="card-number-element" class="field form-control stripe-element"></div>
+					</label>
+				</div>
+				<div class="group col-md-6 col-12 mb-3">
+					<label>
+						<span>{{ _("Expiry Date") }}</span>
+						<div id="card-expiry-element" class="field form-control stripe-element"></div>
+					</label>
+				</div>
+				<div class="group col-md-6 col-12 mb-3">
+					<label>
+						<span>{{ _("CVC") }}</span>
+						<div id="card-cvc-element" class="field form-control stripe-element"></div>
+					</label>
+				</div>
+				<div class="col-12">
+					<div id="card-errors" role="alert" class="text-danger mb-3"></div>
+				</div>
+			</div>
+			<button type="submit" class="btn btn-primary btn-lg btn-block mb-4" id="submit">
+				{{_('Pay')}} {{amount}}
+			</button>
+			<div class="outcome text-center">
+				<div class="error alert alert-danger" hidden>
+					{{ _("An error occurred during the payment process. Please contact us.") }}
+				</div>
+				<div class="success alert alert-success" hidden>
+					{{ _("Your payment has been successfully processed.") }}
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<style>
+/* Hide empty header */
+.page-header-wrapper {
+	display: none !important;
+}
+
+.payment-container {
+	max-width: 600px;
+	margin: 50px auto;
+}
+
+.field {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.field:focus {
+	border-color: #4CAF50;
+	outline: none;
+}
+
+.stripe-element {
+	background-color: white;
+	padding: 11px 10px !important;
+}
+
+.StripeElement {
+	width: 100%;
+}
+
+.StripeElement--focus {
+	border-color: #4CAF50 !important;
+}
+
+.StripeElement--invalid {
+	border-color: #fa755a !important;
+}
+
+.StripeElement--complete {
+	border-color: #28a745 !important;
+}
+
+#submit {
+	font-size: 18px;
+	padding: 15px;
+}
+
+#submit:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+label {
+	font-weight: 600;
+	margin-bottom: 5px;
+	display: block;
+}
+
+label span {
+	display: block;
+	margin-bottom: 8px;
+	color: #333;
+}
+</style>
+
+{% endblock %}
