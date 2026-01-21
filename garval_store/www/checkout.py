@@ -1,8 +1,11 @@
 import frappe
-from garval_store.utils import set_lang, get_customer_from_user, get_payment_gateways, get_currency_symbol
+from garval_store.utils import set_lang, get_customer_from_user, get_payment_gateways, get_currency_symbol, require_email_verification
 
 def get_context(context):
     """Context for checkout page"""
+    # Require email verification
+    require_email_verification()
+    
     context.lang = set_lang()
     context.no_cache = 1
     context.currency_symbol = get_currency_symbol()

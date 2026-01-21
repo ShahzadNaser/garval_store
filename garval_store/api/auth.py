@@ -15,9 +15,36 @@ def login(email, password):
 
         login_manager = LoginManager()
         login_manager.authenticate(email, password)
+        
+        # Check email verification BEFORE creating session
+        # Skip verification check for Administrator
+        if login_manager.user not in ("Administrator", "Guest"):
+            email_verified = frappe.db.get_value("User", login_manager.user, "email_verified") or 0
+            
+            # Check for REAL OAuth providers (Google, Facebook, etc.) - NOT "frappe" provider
+            # "frappe" provider is Frappe SSO, not real OAuth
+            real_oauth_providers = ["google", "facebook", "github", "salesforce", "office_365"]
+            social_logins = frappe.db.get_all("User Social Login", 
+                filters={"parent": login_manager.user, "provider": ["in", real_oauth_providers]}, 
+                fields=["provider"]
+            )
+            has_social_login = bool(social_logins)
+            
+            # Require email verification (SSO users are auto-verified in on_user_login hook)
+            if not email_verified and not has_social_login:
+                # Clear any partial session state and throw error
+                # Don't call post_login() - this prevents session creation
+                frappe.local.session_obj = None
+                frappe.local.session = {}
+                frappe.throw(
+                    _("Please verify your email address before logging in. Check your inbox for the verification link."),
+                    frappe.AuthenticationError
+                )
+        
+        # Email is verified (or SSO/Admin) - proceed with login
         login_manager.post_login()
 
-        # Check if email is verified
+        # Get email verification status after login
         email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
 
         # Ensure Customer role is assigned to user
@@ -59,7 +86,21 @@ def login(email, password):
             "email_verified": bool(email_verified)
         }
 
-    except frappe.AuthenticationError:
+    except frappe.AuthenticationError as e:
+        # Ensure no session is created on error
+        if hasattr(frappe.local, 'session_obj'):
+            frappe.local.session_obj = None
+        if hasattr(frappe.local, 'session'):
+            frappe.local.session = {}
+        
+        # Check if it's an email verification error
+        error_msg = str(e)
+        if "verify your email" in error_msg.lower():
+            return {
+                "success": False,
+                "error": error_msg,
+                "requires_verification": True
+            }
         return {
             "success": False,
             "error": _("Invalid email or password")
@@ -122,9 +163,12 @@ def send_verification_email(email, full_name):
     # Generate verification key
     verification_key = random_string(32)
 
-    # Store key in user record
+    # Store key in user record and track when email was sent
+    from frappe.utils import now
     frappe.db.set_value("User", email, "email_verification_key", verification_key)
     frappe.db.set_value("User", email, "email_verified", 0)
+    # Store timestamp of when verification email was sent (for rate limiting)
+    frappe.db.set_value("User", email, "last_verification_email_sent", now())
     frappe.db.commit()
 
     # Build verification URL
@@ -257,6 +301,31 @@ def resend_verification_email(email):
                 "success": False,
                 "error": _("Email is already verified")
             }
+
+        # Rate limiting: Check if last email was sent less than 5 minutes ago
+        from frappe.utils import now_datetime, get_datetime, add_to_date
+        last_sent = frappe.db.get_value("User", email, "last_verification_email_sent")
+        
+        if last_sent:
+            last_sent_dt = get_datetime(last_sent)
+            five_minutes_ago = add_to_date(now_datetime(), minutes=-5)
+            
+            if last_sent_dt > five_minutes_ago:
+                # Calculate remaining time
+                remaining_seconds = (last_sent_dt - five_minutes_ago).total_seconds()
+                remaining_minutes = int(remaining_seconds / 60) + 1  # Round up
+                
+                lang = frappe.local.lang or "es"
+                if lang == "es":
+                    error_msg = _("Por favor espera {0} minutos antes de solicitar otro correo de verificación.").format(remaining_minutes)
+                else:
+                    error_msg = _("Please wait {0} minutes before requesting another verification email.").format(remaining_minutes)
+                
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "wait_time_minutes": remaining_minutes
+                }
 
         # Get user's full name
         full_name = frappe.db.get_value("User", email, "full_name") or email

@@ -5,6 +5,19 @@ from garval_store.utils import create_sales_order_from_cart, calculate_taxes_and
 @frappe.whitelist(allow_guest=True)
 def create_order(customer_info, items, total):
     """Create ERPNext Sales Order from checkout"""
+    # Require email verification
+    if frappe.session.user == "Guest":
+        frappe.throw(_("Please login to place an order"), frappe.AuthenticationError)
+    
+    # Check email verification (skip for Administrator)
+    if frappe.session.user not in ("Administrator",):
+        email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+        if not email_verified:
+            frappe.throw(
+                _("Please verify your email address before placing an order. Check your inbox for the verification link."),
+                frappe.AuthenticationError
+            )
+    
     try:
         if isinstance(customer_info, str):
             import json

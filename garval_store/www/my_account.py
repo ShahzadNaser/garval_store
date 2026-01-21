@@ -1,16 +1,14 @@
 import frappe
-from garval_store.utils import set_lang, get_customer_from_user, get_customer_orders, get_currency_symbol
+from garval_store.utils import set_lang, get_customer_from_user, get_customer_orders, get_currency_symbol, require_email_verification
 
 def get_context(context):
     """Context for my account page - shows ERPNext Sales Orders"""
+    # Require email verification
+    require_email_verification()
+    
     context.lang = set_lang()
     context.no_cache = 1
     context.currency_symbol = get_currency_symbol()
-
-    # Require login
-    if frappe.session.user == "Guest":
-        frappe.local.flags.redirect_location = "/customer-login?redirect=/my-account"
-        raise frappe.Redirect
 
     # Get customer
     customer_name = get_customer_from_user()

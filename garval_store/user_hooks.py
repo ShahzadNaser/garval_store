@@ -11,16 +11,29 @@ def on_user_login(login_manager):
     if user in ("Administrator", "Guest"):
         return
 
+    email_verified = frappe.db.get_value("User", user, "email_verified")
+    real_oauth_providers = ["google", "facebook", "github", "salesforce", "office_365"]
+    social_logins = frappe.db.get_all("User Social Login", 
+        filters={"parent": user, "provider": ["in", real_oauth_providers]}, 
+        fields=["provider"]
+    )
+    has_social_login = bool(social_logins)
+    
+    # SECURITY: Prevent login if email is not verified (unless SSO user)
+    if not email_verified and not has_social_login:
+        # Throw error to prevent login - this must happen outside try block
+        frappe.throw(
+            _("Please verify your email address before logging in. Check your inbox for the verification link."),
+            frappe.AuthenticationError
+        )
+    
+    # Auto-verify for SSO users (must be outside try block to ensure it commits)
+    if not email_verified and has_social_login:
+        frappe.db.set_value("User", user, "email_verified", 1, update_modified=False)
+        frappe.db.commit()
+
     # Use ignore_permissions instead of switching users - this preserves session integrity
     try:
-        # Only auto-verify email for actual SSO users (those with social login configured)
-        # Regular email/password users must verify via the email link
-        if not frappe.db.get_value("User", user, "email_verified"):
-            # Check if user has any social login configured
-            has_social_login = frappe.db.exists("User Social Login", {"parent": user})
-            if has_social_login:
-                frappe.db.set_value("User", user, "email_verified", 1, update_modified=False)
-
         # Check if customer already exists for this user
         from garval_store.utils import get_customer_from_user
         customer = get_customer_from_user(user)

@@ -586,8 +586,16 @@ const GarvalStore = {
 
             form.insertBefore(messageEl, form.firstChild);
 
-            // Auto-remove after 5 seconds
-            setTimeout(() => messageEl.remove(), 5000);
+            // Scroll to message to make it visible (especially important when user has scrolled down)
+            setTimeout(() => {
+                messageEl.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }, 100);
+
+            
         }
     },
 

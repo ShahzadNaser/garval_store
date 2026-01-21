@@ -124,15 +124,14 @@
 <script>
 const ENABLE_PASSWORD_POLICY = {{ enable_password_policy|tojson }};
 const MINIMUM_PASSWORD_SCORE = {{ minimum_password_score|tojson }};
-const LANG = '{{ lang }}';
 
 // Password strength labels
 const strengthLabels = {
-    0: LANG === 'es' ? 'Muy débil' : 'Very weak',
-    1: LANG === 'es' ? 'Débil' : 'Weak',
-    2: LANG === 'es' ? 'Aceptable' : 'Fair',
-    3: LANG === 'es' ? 'Buena' : 'Good',
-    4: LANG === 'es' ? 'Fuerte' : 'Strong'
+    0: '{{ _("Very weak") }}',
+    1: '{{ _("Weak") }}',
+    2: '{{ _("Fair") }}',
+    3: '{{ _("Good") }}',
+    4: '{{ _("Strong") }}'
 };
 
 const strengthColors = {
@@ -244,21 +243,17 @@ document.getElementById('signupForm').addEventListener('submit', async function(
     const confirmPassword = form.confirm_password.value;
 
     if (password !== confirmPassword) {
-        GarvalStore.Forms.showMessage(form, 'error',
-            LANG === 'es' ? 'Las contraseñas no coinciden' : 'Passwords do not match');
+        GarvalStore.Forms.showMessage(form, 'error', '{{ _("Passwords do not match") }}');
         return;
     }
 
     // Validate password strength if policy is enabled
     if (ENABLE_PASSWORD_POLICY && currentPasswordScore < MINIMUM_PASSWORD_SCORE) {
-        GarvalStore.Forms.showMessage(form, 'error',
-            LANG === 'es'
-                ? 'La contraseña es demasiado débil. Por favor, elija una contraseña más segura.'
-                : 'Password is too weak. Please choose a stronger password.');
+        GarvalStore.Forms.showMessage(form, 'error', '{{ _("Password is too weak. Please choose a stronger password.") }}');
         return;
     }
 
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (LANG === 'es' ? 'Creando cuenta...' : 'Creating account...');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Creating account...") }}';
     submitBtn.disabled = true;
 
     const formData = new FormData(form);
@@ -282,20 +277,21 @@ document.getElementById('signupForm').addEventListener('submit', async function(
         const result = await response.json();
 
         if (result.message && result.message.success) {
-            GarvalStore.Forms.showMessage(form, 'success',
-                LANG === 'es' ? 'Cuenta creada correctamente. Redirigiendo...' : 'Account created successfully. Redirecting...');
+            // Show success message with verification email info
+            const successMsg = result.message.message || '{{ _("Account created successfully. A verification email has been sent to your email address. Please verify your account before logging in.") }}';
+            
+            GarvalStore.Forms.showMessage(form, 'success', successMsg);
             setTimeout(() => {
                 window.location.href = '/customer-login';
-            }, 2000);
+            }, 4000); // Give user time to read the message
         } else {
             GarvalStore.Forms.showMessage(form, 'error',
-                result.message?.error || (LANG === 'es' ? 'Error al crear la cuenta' : 'Error creating account'));
+                result.message?.error || '{{ _("Error creating account") }}');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }
     } catch (error) {
-        GarvalStore.Forms.showMessage(form, 'error',
-            LANG === 'es' ? 'Error al crear la cuenta' : 'Error creating account');
+        GarvalStore.Forms.showMessage(form, 'error', '{{ _("Error creating account") }}');
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     }

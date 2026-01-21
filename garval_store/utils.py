@@ -108,6 +108,51 @@ def set_lang():
     frappe.local.lang = lang
     return lang
 
+
+def require_email_verification():
+    """Check if user's email is verified. Redirect to login/verify if not.
+    Returns True if verified, False otherwise (and redirects)"""
+    if frappe.session.user == "Guest":
+        frappe.local.flags.redirect_location = "/customer-login"
+        raise frappe.Redirect
+    
+    # Skip check for Administrator
+    if frappe.session.user in ("Administrator",):
+        return True
+    
+    # Check email verification (SSO users are auto-verified in on_user_login hook)
+    email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+    if not email_verified:
+        # Logout and show error message
+        from frappe.auth import LoginManager
+        login_manager = LoginManager()
+        login_manager.logout()
+        
+        # Show error message that verification email was sent
+        from frappe import _
+        lang = frappe.local.lang or "es"
+        if lang == "es":
+            title = _("Verificación de Email Requerida")
+            message = _("Por favor, verifica tu dirección de correo electrónico antes de continuar. Se ha enviado un correo de verificación a tu dirección de correo electrónico.")
+            login_label = _("Ir a Iniciar Sesión")
+        else:
+            title = _("Email Verification Required")
+            message = _("Please verify your email address before continuing. A verification email has been sent to your email address.")
+            login_label = _("Go to Login")
+        
+        frappe.redirect_to_message(
+            title=title,
+            html=f"<p>{message}</p>",
+            indicator_color="orange",
+            context={
+                "primary_action": "/customer-login",
+                "primary_label": login_label
+            }
+        )
+        raise frappe.Redirect
+    
+    return True
+
 def get_currency_symbol(company=None):
     """Get currency symbol for the given company or default company"""
     try:
@@ -548,7 +593,8 @@ def create_customer_from_signup(data):
             "enabled": 1,
             "new_password": data.get("password"),
             "send_welcome_email": 0,
-            "user_type": "Website User"
+            "user_type": "Website User",
+            "email_verified": 0
         })
         user.insert(ignore_permissions=True)
 

@@ -48,6 +48,17 @@
                 </a>
             </div>
 
+            <!-- Resend Verification Email Section (shown when email not verified) -->
+            <div id="resendVerificationSection" style="display: none; margin-bottom: var(--spacing-md); padding: var(--spacing-md); background: #fff3cd; border: 1px solid #ffc107; border-radius: var(--radius-md, 8px);">
+                <p style="margin: 0 0 var(--spacing-sm) 0; font-size: var(--font-size-sm); color: #856404;">
+                    <i class="fas fa-info-circle"></i> {{ _("Email not verified. Please check your inbox or resend verification email.") }}
+                </p>
+                <button type="button" id="resendVerificationBtn" class="btn btn-outline btn-sm" style="width: 100%;">
+                    <i class="fas fa-envelope"></i> {{ _("Resend Verification Email") }}
+                </button>
+                <div id="resendVerificationMessage" style="margin-top: var(--spacing-sm); font-size: var(--font-size-sm); display: none;"></div>
+            </div>
+
             <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
                 {{ _("Login") }}
             </button>
@@ -104,7 +115,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
 
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Iniciando...") if lang == "es" else "Logging in..." }}';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Logging in...") }}';
     submitBtn.disabled = true;
 
     const formData = new FormData(form);
@@ -134,16 +145,98 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         }
 
         // Login failed - show error
-        let errorMsg = result.message?.error || '{{ _("Email o contraseña incorrectos") if lang == "es" else "Invalid email or password" }}';
+        let errorMsg = result.message?.error || '{{ _("Invalid email or password") }}';
+        
+        // Add resend link to error message if verification is required
+        if (result.message?.requires_verification) {
+            const email = formData.get('email').trim().toLowerCase();
+            const resendLink = `<a href="#" id="resendLinkInError" style="margin-left: 8px; color: var(--color-primary, #007bff); text-decoration: underline; font-size: 0.9em;">{{ _("Resend verification email") }}</a>`;
+            errorMsg += resendLink;
+            document.getElementById('resendVerificationSection').style.display = 'block';
+        } else {
+            document.getElementById('resendVerificationSection').style.display = 'none';
+        }
+        
         GarvalStore.Forms.showMessage(form, 'error', errorMsg);
+        
+        // Attach click handler to resend link in error message
+        if (result.message?.requires_verification) {
+            const resendLinkEl = document.getElementById('resendLinkInError');
+            if (resendLinkEl) {
+                resendLinkEl.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Trigger click on the resend button
+                    document.getElementById('resendVerificationBtn').click();
+                });
+            }
+        }
+        
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     } catch (error) {
         // Network or parsing error
-        GarvalStore.Forms.showMessage(form, 'error',
-            '{{ _("Error de conexión. Inténtelo de nuevo.") if lang == "es" else "Connection error. Please try again." }}');
+        GarvalStore.Forms.showMessage(form, 'error', '{{ _("Connection error. Please try again.") }}');
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
+    }
+});
+
+// Resend verification email functionality
+document.getElementById('resendVerificationBtn').addEventListener('click', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    if (!email) {
+        GarvalStore.Forms.showMessage(document.getElementById('loginForm'), 'error', '{{ _("Please enter your email address") }}');
+        return;
+    }
+    
+    const btn = this;
+    const originalText = btn.innerHTML;
+    const messageDiv = document.getElementById('resendVerificationMessage');
+    const csrfToken = document.querySelector('[name="csrf_token"]').value;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Sending...") }}';
+    btn.disabled = true;
+    messageDiv.style.display = 'none';
+    
+    try {
+        const response = await fetch('/api/method/garval_store.api.auth.resend_verification_email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Frappe-CSRF-Token': csrfToken
+            },
+            body: JSON.stringify({
+                email: email.trim().toLowerCase()
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.message && result.message.success) {
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = '#28a745';
+            messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + (result.message.message || '{{ _("Verification email sent. Please check your inbox.") }}');
+        } else {
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = '#dc3545';
+            let errorMsg = result.message?.error || '{{ _("Error sending verification email") }}';
+            
+            // Show wait time if rate limited
+            if (result.message?.wait_time_minutes) {
+                errorMsg += ' {{ _("Please wait") }} ' + result.message.wait_time_minutes + ' {{ _("minutes.") }}';
+            }
+            
+            messageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + errorMsg;
+        }
+    } catch (error) {
+        messageDiv.style.display = 'block';
+        messageDiv.style.color = '#dc3545';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> {{ _("Connection error. Please try again.") }}';
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 });
 </script>
