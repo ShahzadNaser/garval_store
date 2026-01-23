@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.apps import get_default_path
+from garval_store.utils import get_email_verified, set_email_verified
 
 
 def on_user_login(login_manager):
@@ -11,7 +12,7 @@ def on_user_login(login_manager):
     if user in ("Administrator", "Guest"):
         return
 
-    email_verified = frappe.db.get_value("User", user, "email_verified")
+    email_verified = get_email_verified(user)
     real_oauth_providers = ["google", "facebook", "github", "salesforce", "office_365"]
     social_logins = frappe.db.get_all("User Social Login", 
         filters={"parent": user, "provider": ["in", real_oauth_providers]}, 
@@ -29,8 +30,7 @@ def on_user_login(login_manager):
     
     # Auto-verify for SSO users (must be outside try block to ensure it commits)
     if not email_verified and has_social_login:
-        frappe.db.set_value("User", user, "email_verified", 1, update_modified=False)
-        frappe.db.commit()
+        set_email_verified(user, True)
 
     # Use ignore_permissions instead of switching users - this preserves session integrity
     try:

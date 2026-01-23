@@ -7,6 +7,7 @@ import frappe
 from frappe import _
 
 from payments.payment_gateways.doctype.stripe_settings.stripe_settings import get_gateway_controller
+from garval_store.utils import get_email_verified
 
 
 @frappe.whitelist()
@@ -18,7 +19,7 @@ def process_payment(stripe_token_id, data, reference_doctype=None, reference_doc
     
     # Check email verification (skip for Administrator)
     if frappe.session.user not in ("Administrator",):
-        email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+        email_verified = get_email_verified(frappe.session.user)
         if not email_verified:
             frappe.throw(
                 _("Please verify your email address before processing payment. Check your inbox for the verification link."),

@@ -2,44 +2,9 @@ import frappe
 
 
 def after_install():
-    """Setup custom fields and permissions after app installation"""
-    create_email_verification_fields()
+    """Setup permissions after app installation"""
     setup_customer_role_permissions()
     frappe.db.commit()
-
-
-def create_email_verification_fields():
-    """Create custom fields on User doctype for email verification"""
-
-    # Check if email_verified field exists
-    if not frappe.db.exists("Custom Field", "User-email_verified"):
-        frappe.get_doc({
-            "doctype": "Custom Field",
-            "dt": "User",
-            "fieldname": "email_verified",
-            "fieldtype": "Check",
-            "label": "Email Verified",
-            "insert_after": "enabled",
-            "default": "0",
-            "read_only": 1,
-            "description": "Checked when user verifies their email address"
-        }).insert(ignore_permissions=True)
-        print("Created Custom Field: User-email_verified")
-
-    # Check if email_verification_key field exists
-    if not frappe.db.exists("Custom Field", "User-email_verification_key"):
-        frappe.get_doc({
-            "doctype": "Custom Field",
-            "dt": "User",
-            "fieldname": "email_verification_key",
-            "fieldtype": "Data",
-            "label": "Email Verification Key",
-            "insert_after": "email_verified",
-            "hidden": 1,
-            "read_only": 1,
-            "description": "Temporary key for email verification"
-        }).insert(ignore_permissions=True)
-        print("Created Custom Field: User-email_verification_key")
 
 
 def setup_customer_role_permissions():

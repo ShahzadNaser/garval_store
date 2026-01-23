@@ -1,0 +1,79 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:user",
+ "creation": "2026-01-23 18:59:18.950273",
+ "custom": 1,
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_zhyj",
+  "user",
+  "email_verified",
+  "email_verification_key",
+  "last_verification_email_sent"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_zhyj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "email_verified",
+   "fieldtype": "Check",
+   "label": "Email Verified",
+   "read_only": 1
+  },
+  {
+   "fieldname": "email_verification_key",
+   "fieldtype": "Data",
+   "label": "Email Verification Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_verification_email_sent",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "Last Verification Email Sent",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-23 19:07:02.338250",
+ "modified_by": "Administrator",
+ "module": "Garval Store",
+ "name": "User Email Verification",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

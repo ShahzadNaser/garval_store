@@ -1,1 +1,2 @@
-add_user_verification_email_sent_fields
+garval_store.patches.add_user_verification_email_sent_fields
+garval_store.patches.create_user_email_verification_doctype

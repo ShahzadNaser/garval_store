@@ -5,12 +5,8 @@ app_description = "E-commerce platform with bilingual support (Spanish/English)"
 app_email = "kashif@example.com"
 app_license = "MIT"
 
-# Fixtures - Custom Fields and Client Scripts
+# Fixtures - Client Scripts
 fixtures = [
-    {
-        "dt": "Custom Field",
-        "filters": [["name", "in", ["User-email_verified", "User-email_verification_key"]]]
-    },
     {
         "dt": "Client Script",
         "filters": [["name", "=", "Payment Request - Order Confirmation Button"]]

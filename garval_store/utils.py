@@ -121,7 +121,7 @@ def require_email_verification():
         return True
     
     # Check email verification (SSO users are auto-verified in on_user_login hook)
-    email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+    email_verified = get_email_verified(frappe.session.user)
     if not email_verified:
         # Logout and show error message
         from frappe.auth import LoginManager
@@ -554,6 +554,110 @@ def get_customer_from_user(user=None):
 
     return customer
 
+
+def get_or_create_email_verification(user):
+    """Get or create User Email Verification record for a user"""
+    if not user or user == "Guest":
+        return None
+    
+    # Check if record exists
+    verification = frappe.db.get_value("User Email Verification", {"user": user}, "name")
+    
+    if verification:
+        return verification
+    
+    # Create new record
+    try:
+        doc = frappe.get_doc({
+            "doctype": "User Email Verification",
+            "user": user,
+            "email_verified": 0
+        })
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
+        return doc.name
+    except Exception as e:
+        frappe.log_error(f"Error creating email verification record for {user}: {str(e)}")
+        return None
+
+
+def get_email_verified(user):
+    """Get email verified status for a user"""
+    if not user or user == "Guest":
+        return False
+    
+    verification_name = get_or_create_email_verification(user)
+    if not verification_name:
+        return False
+    
+    return bool(frappe.db.get_value("User Email Verification", verification_name, "email_verified"))
+
+
+def set_email_verified(user, verified):
+    """Set email verified status for a user"""
+    if not user or user == "Guest":
+        return False
+    
+    verification_name = get_or_create_email_verification(user)
+    if not verification_name:
+        return False
+    
+    frappe.db.set_value("User Email Verification", verification_name, "email_verified", 1 if verified else 0)
+    frappe.db.commit()
+    return True
+
+
+def get_email_verification_key(user):
+    """Get email verification key for a user"""
+    if not user or user == "Guest":
+        return None
+    
+    verification_name = get_or_create_email_verification(user)
+    if not verification_name:
+        return None
+    
+    return frappe.db.get_value("User Email Verification", verification_name, "email_verification_key")
+
+
+def set_email_verification_key(user, key):
+    """Set email verification key for a user"""
+    if not user or user == "Guest":
+        return False
+    
+    verification_name = get_or_create_email_verification(user)
+    if not verification_name:
+        return False
+    
+    frappe.db.set_value("User Email Verification", verification_name, "email_verification_key", key)
+    frappe.db.commit()
+    return True
+
+
+def get_last_verification_email_sent(user):
+    """Get last verification email sent timestamp for a user"""
+    if not user or user == "Guest":
+        return None
+    
+    verification_name = get_or_create_email_verification(user)
+    if not verification_name:
+        return None
+    
+    return frappe.db.get_value("User Email Verification", verification_name, "last_verification_email_sent")
+
+
+def set_last_verification_email_sent(user, timestamp):
+    """Set last verification email sent timestamp for a user"""
+    if not user or user == "Guest":
+        return False
+    
+    verification_name = get_or_create_email_verification(user)
+    if not verification_name:
+        return False
+    
+    frappe.db.set_value("User Email Verification", verification_name, "last_verification_email_sent", timestamp)
+    frappe.db.commit()
+    return True
+
 def get_customer_orders(customer, limit=10):
     """Get customer's sales orders - exclude cancelled orders"""
     if not customer:
@@ -593,8 +697,7 @@ def create_customer_from_signup(data):
             "enabled": 1,
             "new_password": data.get("password"),
             "send_welcome_email": 0,
-            "user_type": "Website User",
-            "email_verified": 0
+            "user_type": "Website User"
         })
         user.insert(ignore_permissions=True)
 
@@ -678,7 +781,7 @@ def create_sales_order_from_cart(cart_data, customer_info):
             }
 
         # Check if user's email is verified
-        email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+        email_verified = get_email_verified(frappe.session.user)
         if not email_verified:
             return {
                 "success": False,

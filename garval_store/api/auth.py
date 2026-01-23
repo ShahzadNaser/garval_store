@@ -1,7 +1,15 @@
 import frappe
 from frappe import _
 from frappe.utils import random_string, get_url
-from garval_store.utils import create_customer_from_signup
+from garval_store.utils import (
+    create_customer_from_signup,
+    get_email_verified,
+    set_email_verified,
+    get_email_verification_key,
+    set_email_verification_key,
+    get_last_verification_email_sent,
+    set_last_verification_email_sent
+)
 
 
 @frappe.whitelist(allow_guest=True)
@@ -19,7 +27,7 @@ def login(email, password):
         # Check email verification BEFORE creating session
         # Skip verification check for Administrator
         if login_manager.user not in ("Administrator", "Guest"):
-            email_verified = frappe.db.get_value("User", login_manager.user, "email_verified") or 0
+            email_verified = get_email_verified(login_manager.user) or 0
             
             # Check for REAL OAuth providers (Google, Facebook, etc.) - NOT "frappe" provider
             # "frappe" provider is Frappe SSO, not real OAuth
@@ -45,7 +53,7 @@ def login(email, password):
         login_manager.post_login()
 
         # Get email verification status after login
-        email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+        email_verified = get_email_verified(frappe.session.user)
 
         # Ensure Customer role is assigned to user
         user = frappe.get_doc("User", frappe.session.user)
@@ -165,11 +173,10 @@ def send_verification_email(email, full_name):
 
     # Store key in user record and track when email was sent
     from frappe.utils import now
-    frappe.db.set_value("User", email, "email_verification_key", verification_key)
-    frappe.db.set_value("User", email, "email_verified", 0)
+    set_email_verification_key(email, verification_key)
+    set_email_verified(email, False)
     # Store timestamp of when verification email was sent (for rate limiting)
-    frappe.db.set_value("User", email, "last_verification_email_sent", now())
-    frappe.db.commit()
+    set_last_verification_email_sent(email, now())
 
     # Build verification URL
     verification_url = get_url(f"/verify-email?key={verification_key}&email={email}")
@@ -244,11 +251,11 @@ def verify_email(key, email):
             }
 
         # Get stored verification key
-        stored_key = frappe.db.get_value("User", email, "email_verification_key")
+        stored_key = get_email_verification_key(email)
 
         if not stored_key:
             # Check if already verified
-            is_verified = frappe.db.get_value("User", email, "email_verified")
+            is_verified = get_email_verified(email)
             if is_verified:
                 return {
                     "success": True,
@@ -267,9 +274,8 @@ def verify_email(key, email):
             }
 
         # Mark email as verified
-        frappe.db.set_value("User", email, "email_verified", 1)
-        frappe.db.set_value("User", email, "email_verification_key", None)
-        frappe.db.commit()
+        set_email_verified(email, True)
+        set_email_verification_key(email, None)
 
         return {
             "success": True,
@@ -295,7 +301,7 @@ def resend_verification_email(email):
             }
 
         # Check if already verified
-        is_verified = frappe.db.get_value("User", email, "email_verified")
+        is_verified = get_email_verified(email)
         if is_verified:
             return {
                 "success": False,
@@ -304,7 +310,7 @@ def resend_verification_email(email):
 
         # Rate limiting: Check if last email was sent less than 5 minutes ago
         from frappe.utils import now_datetime, get_datetime, add_to_date
-        last_sent = frappe.db.get_value("User", email, "last_verification_email_sent")
+        last_sent = get_last_verification_email_sent(email)
         
         if last_sent:
             last_sent_dt = get_datetime(last_sent)
@@ -352,7 +358,7 @@ def check_email_verified():
     if frappe.session.user == "Guest":
         return {"verified": False, "is_guest": True}
 
-    is_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+    is_verified = get_email_verified(frappe.session.user)
     return {
         "verified": bool(is_verified),
         "is_guest": False

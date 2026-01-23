@@ -1,6 +1,11 @@
 import frappe
 from frappe import _
-from garval_store.utils import create_sales_order_from_cart, calculate_taxes_and_charges, format_currency
+from garval_store.utils import (
+    create_sales_order_from_cart,
+    calculate_taxes_and_charges,
+    format_currency,
+    get_email_verified
+)
 
 @frappe.whitelist(allow_guest=True)
 def create_order(customer_info, items, total):
@@ -11,7 +16,7 @@ def create_order(customer_info, items, total):
     
     # Check email verification (skip for Administrator)
     if frappe.session.user not in ("Administrator",):
-        email_verified = frappe.db.get_value("User", frappe.session.user, "email_verified")
+        email_verified = get_email_verified(frappe.session.user)
         if not email_verified:
             frappe.throw(
                 _("Please verify your email address before placing an order. Check your inbox for the verification link."),
