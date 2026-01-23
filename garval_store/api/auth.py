@@ -27,14 +27,67 @@ def login(email, password):
         # Proceed with login
         login_manager.post_login()
 
-        # Get email verification status after login
-        email_verified = get_email_verified(frappe.session.user)
-
         # Ensure Customer role is assigned to user
         user = frappe.get_doc("User", frappe.session.user)
-        if "Customer" not in [role.role for role in user.roles]:
-            user.add_roles("Customer")
+
+        # Auto-verify email for SSO users
+        email_verified = get_email_verified(frappe.session.user)
+        real_oauth_providers = ["google", "facebook", "github", "salesforce", "office_365"]
+        social_logins = frappe.db.get_all("User Social Login", 
+            filters={"parent": frappe.session.user, "provider": ["in", real_oauth_providers]}, 
+            fields=["provider"]
+        )
+        has_social_login = bool(social_logins)
+        
+        if not email_verified and has_social_login:
+            set_email_verified(frappe.session.user, True)
             frappe.db.commit()
+
+        # Create Customer record if not exists (for SSO users)
+        try:
+            from garval_store.utils import get_customer_from_user
+            customer = get_customer_from_user(frappe.session.user)
+
+            if not customer:
+                # Get user details
+                full_name = user.full_name or user.first_name or frappe.session.user
+
+                # Create Customer
+                customer = frappe.get_doc({
+                    "doctype": "Customer",
+                    "customer_name": full_name,
+                    "customer_type": "Individual",
+                    "customer_group": frappe.db.get_single_value("Selling Settings", "customer_group") or "Individual",
+                    "territory": frappe.db.get_single_value("Selling Settings", "territory") or "All Territories",
+                    "email_id": frappe.session.user
+                })
+                customer.insert(ignore_permissions=True)
+
+                # Add Customer role to user (if not already added)
+                if "Customer" not in [r.role for r in user.roles]:
+                    user.append("roles", {"role": "Customer"})
+                    user.save(ignore_permissions=True)
+
+                # Create Contact and Link
+                contact = frappe.get_doc({
+                    "doctype": "Contact",
+                    "first_name": user.first_name or full_name.split()[0] if full_name else frappe.session.user,
+                    "last_name": user.last_name or " ".join(full_name.split()[1:]) if full_name else "",
+                    "user": frappe.session.user,
+                    "links": [{
+                        "link_doctype": "Customer",
+                        "link_name": customer.name
+                    }]
+                })
+                contact.append("email_ids", {
+                    "email_id": frappe.session.user,
+                    "is_primary": 1
+                })
+                contact.insert(ignore_permissions=True)
+                frappe.db.commit()
+
+        except Exception as e:
+            frappe.log_error(f"Failed to create customer on login for {frappe.session.user}: {str(e)}\n{frappe.get_traceback()}", "Customer Creation Error")
 
         # Ensure Stripe Settings permission for Customer role (on first login after deployment)
         try:

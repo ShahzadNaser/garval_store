@@ -56,9 +56,6 @@ web_include_js = [
 # DocTypes
 # doc_events = {}
 
-# On login hook - create Customer if not exists (for SSO users)
-# on_login = "garval_store.user_hooks.on_user_login"
-
 # On session creation hook - run cart setup as Administrator to avoid permission errors
 on_session_creation = "garval_store.user_hooks.on_session_creation"
 
