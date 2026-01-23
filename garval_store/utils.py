@@ -134,19 +134,19 @@ def require_email_verification():
         if lang == "es":
             title = _("Verificación de Email Requerida")
             message = _("Por favor, verifica tu dirección de correo electrónico antes de continuar. Se ha enviado un correo de verificación a tu dirección de correo electrónico.")
-            login_label = _("Ir a Iniciar Sesión")
+            home_label = _("Ir a Inicio")
         else:
             title = _("Email Verification Required")
             message = _("Please verify your email address before continuing. A verification email has been sent to your email address.")
-            login_label = _("Go to Login")
+            home_label = _("Go to Home")
         
         frappe.redirect_to_message(
             title=title,
             html=f"<p>{message}</p>",
             indicator_color="orange",
             context={
-                "primary_action": "/customer-login",
-                "primary_label": login_label
+                "primary_action": "/",
+                "primary_label": home_label
             }
         )
         raise frappe.Redirect
