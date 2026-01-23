@@ -703,18 +703,32 @@ def create_customer_from_signup(data):
 
         # Add Customer role to user
         user.add_roles("Customer")
-        frappe.db.commit()
 
-        # Create Customer
-        customer = frappe.get_doc({
-            "doctype": "Customer",
-            "customer_name": data.get("full_name"),
-            "customer_type": "Individual",
-            "customer_group": frappe.db.get_single_value("Selling Settings", "customer_group") or "Individual",
-            "territory": frappe.db.get_single_value("Selling Settings", "territory") or "All Territories",
-            "email_id": data.get("email")
-        })
-        customer.insert(ignore_permissions=True)
+        # Check if Customer already exists with this email (to prevent duplicates)
+        existing_customer = frappe.db.get_value("Customer", {"email_id": data.get("email")}, "name")
+        if existing_customer:
+            # Customer exists but User doesn't - this is the bug scenario
+            # Link the existing customer to the new user
+            frappe.log_error(
+                f"Customer {existing_customer} already exists for email {data.get('email')} but User doesn't. "
+                f"Creating User and linking to existing Customer.",
+                "Customer Signup - Existing Customer"
+            )
+            customer_name = existing_customer
+            # Update customer name if needed
+            frappe.db.set_value("Customer", existing_customer, "customer_name", data.get("full_name"))
+        else:
+            # Create Customer
+            customer = frappe.get_doc({
+                "doctype": "Customer",
+                "customer_name": data.get("full_name"),
+                "customer_type": "Individual",
+                "customer_group": frappe.db.get_single_value("Selling Settings", "customer_group") or "Individual",
+                "territory": frappe.db.get_single_value("Selling Settings", "territory") or "All Territories",
+                "email_id": data.get("email")
+            })
+            customer.insert(ignore_permissions=True)
+            customer_name = customer.name
 
         # Create Contact and Link
         contact = frappe.get_doc({
