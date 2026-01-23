@@ -456,53 +456,71 @@ document.getElementById('passwordForm')?.addEventListener('submit', async functi
 });
 
 // Address management functions
-function openAddressModal(addressId = null) {
+async function openAddressModal(addressId = null) {
     const modal = document.getElementById('addressModal');
     const form = document.getElementById('addressForm');
     const title = document.getElementById('addressModalTitle');
+    const submitButton = form.querySelector('button[type="submit"]');
 
-    form.reset();
-    document.getElementById('address_id').value = '';
-
-    if (addressId) {
-        title.textContent = '{{ _("Editar Dirección") if lang == "es" else "Edit Address" }}';
-        // Load address data
-        loadAddressData(addressId);
-    } else {
+    // Reset form only if creating new address
+    if (!addressId) {
+        form.reset();
+        document.getElementById('address_id').value = '';
         title.textContent = '{{ _("Nueva Dirección") if lang == "es" else "New Address" }}';
+        modal.style.display = 'flex';
+    } else {
+        // For editing, show modal with loading state first
+        title.textContent = '{{ _("Editar Dirección") if lang == "es" else "Edit Address" }}';
+        submitButton.disabled = true;
+        submitButton.textContent = '{{ _("Cargando...") if lang == "es" else "Loading..." }}';
+        modal.style.display = 'flex';
+        
+        // Load address data and wait for it
+        try {
+            await loadAddressData(addressId);
+            submitButton.disabled = false;
+            submitButton.textContent = '{{ _("Save") }}';
+        } catch (error) {
+            alert(error.message || '{{ _("Error al cargar dirección") if lang == "es" else "Error loading address" }}');
+            closeAddressModal();
+            return;
+        }
     }
-
-    modal.style.display = 'flex';
 }
 
 function closeAddressModal() {
     document.getElementById('addressModal').style.display = 'none';
+    // Reset form when closing
+    const form = document.getElementById('addressForm');
+    form.reset();
+    document.getElementById('address_id').value = '';
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = false;
+    submitButton.textContent = '{{ _("Save") }}';
 }
 
 async function loadAddressData(addressId) {
-    try {
-        const response = await fetch(`/api/method/garval_store.api.address.get_address?address_id=${addressId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const result = await response.json();
-        if (result.message?.success) {
-            const addr = result.message.address;
-            document.getElementById('address_id').value = addr.name;
-            document.getElementById('address_title').value = addr.address_title || '';
-            document.getElementById('address_line1').value = addr.address_line1 || '';
-            document.getElementById('address_line2').value = addr.address_line2 || '';
-            document.getElementById('city').value = addr.city || '';
-            document.getElementById('state').value = addr.state || '';
-            document.getElementById('pincode').value = addr.pincode || '';
-            document.getElementById('country').value = addr.country || 'Spain';
-            document.getElementById('address_phone').value = addr.phone || '';
+    const response = await fetch(`/api/method/garval_store.api.address.get_address?address_id=${addressId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
         }
-    } catch (error) {
-        // Silent fail - address data will be empty
+    });
+
+    const result = await response.json();
+    if (result.message?.success) {
+        const addr = result.message.address;
+        document.getElementById('address_id').value = addr.name;
+        document.getElementById('address_title').value = addr.address_title || '';
+        document.getElementById('address_line1').value = addr.address_line1 || '';
+        document.getElementById('address_line2').value = addr.address_line2 || '';
+        document.getElementById('city').value = addr.city || '';
+        document.getElementById('state').value = addr.state || '';
+        document.getElementById('pincode').value = addr.pincode || '';
+        document.getElementById('country').value = addr.country || 'Spain';
+        document.getElementById('address_phone').value = addr.phone || '';
+    } else {
+        throw new Error(result.message?.error || '{{ _("Error al cargar dirección") if lang == "es" else "Error loading address" }}');
     }
 }
 
@@ -565,7 +583,8 @@ async function deleteAddress(addressId) {
 document.getElementById('addressForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const formData = new FormData(this);
-    const addressId = formData.get('address_id');
+    // Get address_id and ensure it's not empty string
+    const addressId = formData.get('address_id')?.trim() || null;
 
     const addressData = {
         address_title: formData.get('address_title'),
@@ -579,6 +598,7 @@ document.getElementById('addressForm')?.addEventListener('submit', async functio
     };
 
     try {
+        // Determine endpoint and add address_id if editing
         const endpoint = addressId ? 'update_address' : 'create_address';
         if (addressId) {
             addressData.address_id = addressId;
