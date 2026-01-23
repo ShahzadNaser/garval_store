@@ -12,6 +12,7 @@ def on_user_login(login_manager):
     if user in ("Administrator", "Guest"):
         return
 
+    # Auto-verify for SSO users (email verification check removed from login)
     email_verified = get_email_verified(user)
     real_oauth_providers = ["google", "facebook", "github", "salesforce", "office_365"]
     social_logins = frappe.db.get_all("User Social Login", 
@@ -19,14 +20,6 @@ def on_user_login(login_manager):
         fields=["provider"]
     )
     has_social_login = bool(social_logins)
-    
-    # SECURITY: Prevent login if email is not verified (unless SSO user)
-    if not email_verified and not has_social_login:
-        # Throw error to prevent login - this must happen outside try block
-        frappe.throw(
-            _("Please verify your email address before logging in. Check your inbox for the verification link."),
-            frappe.AuthenticationError
-        )
     
     # Auto-verify for SSO users (must be outside try block to ensure it commits)
     if not email_verified and has_social_login:

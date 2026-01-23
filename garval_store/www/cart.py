@@ -1,10 +1,9 @@
 import frappe
-from garval_store.utils import set_lang, get_currency_symbol, require_email_verification
+from garval_store.utils import set_lang, get_currency_symbol
 
 def get_context(context):
     """Context for cart page"""
-    # Require email verification for cart (to place orders)
-    require_email_verification()
+    # Email verification only required at checkout, not on cart page
     
     context.lang = set_lang()
     context.no_cache = 1

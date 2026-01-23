@@ -24,32 +24,7 @@ def login(email, password):
         login_manager = LoginManager()
         login_manager.authenticate(email, password)
         
-        # Check email verification BEFORE creating session
-        # Skip verification check for Administrator
-        if login_manager.user not in ("Administrator", "Guest"):
-            email_verified = get_email_verified(login_manager.user) or 0
-            
-            # Check for REAL OAuth providers (Google, Facebook, etc.) - NOT "frappe" provider
-            # "frappe" provider is Frappe SSO, not real OAuth
-            real_oauth_providers = ["google", "facebook", "github", "salesforce", "office_365"]
-            social_logins = frappe.db.get_all("User Social Login", 
-                filters={"parent": login_manager.user, "provider": ["in", real_oauth_providers]}, 
-                fields=["provider"]
-            )
-            has_social_login = bool(social_logins)
-            
-            # Require email verification (SSO users are auto-verified in on_user_login hook)
-            if not email_verified and not has_social_login:
-                # Clear any partial session state and throw error
-                # Don't call post_login() - this prevents session creation
-                frappe.local.session_obj = None
-                frappe.local.session = {}
-                frappe.throw(
-                    _("Please verify your email address before logging in. Check your inbox for the verification link."),
-                    frappe.AuthenticationError
-                )
-        
-        # Email is verified (or SSO/Admin) - proceed with login
+        # Proceed with login
         login_manager.post_login()
 
         # Get email verification status after login
@@ -101,14 +76,6 @@ def login(email, password):
         if hasattr(frappe.local, 'session'):
             frappe.local.session = {}
         
-        # Check if it's an email verification error
-        error_msg = str(e)
-        if "verify your email" in error_msg.lower():
-            return {
-                "success": False,
-                "error": error_msg,
-                "requires_verification": True
-            }
         return {
             "success": False,
             "error": _("Invalid email or password")

@@ -32,9 +32,7 @@ def get_context(context):
         frappe.local.flags.redirect_location = "/customer-login?redirect-to=" + quote(redirect_url)
         raise frappe.Redirect
     
-    # Require email verification for payment
-    from garval_store.utils import require_email_verification
-    require_email_verification()
+    # Email verification only required at checkout, not on payment page
 
     # Validate all required keys are present
     if not (set(expected_keys) - set(list(frappe.form_dict))):
