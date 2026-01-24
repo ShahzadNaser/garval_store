@@ -125,53 +125,6 @@
                         </div>
                     </div>
 
-                    <!-- Payment Method -->
-                    <div class="checkout-section">
-                        <h3 class="checkout-section-title">
-                            <i class="fas fa-credit-card"></i>
-                            {{ _("Payment Method") }}
-                        </h3>
-
-                                                <div class="payment-methods">
-                            {% for gateway in payment_gateways %}
-                            <label class="payment-option" style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm); cursor: pointer; {% if not loop.last %}margin-bottom: var(--spacing-md);{% endif %}">
-                                <input type="radio" name="payment_method" value="{{ gateway.name }}" {% if loop.first %}checked{% endif %} data-gateway="{{ gateway.gateway }}">
-
-                                {% if gateway.gateway == "Stripe" %}
-                                <i class="fab fa-cc-stripe" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
-                                {% elif gateway.name == "bank_transfer" %}
-                                <i class="fas fa-university" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
-                                {% elif gateway.name == "cash_on_delivery" %}
-                                <i class="fas fa-money-bill-wave" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
-                                {% else %}
-                                <i class="fas fa-credit-card" style="font-size: var(--font-size-xl); color: var(--color-primary);"></i>
-                                {% endif %}
-
-                                <div>
-                                    <strong>{{ gateway.label }}</strong>
-                                    {% if gateway.description %}
-                                    <p style="margin: 0; font-size: var(--font-size-sm); color: var(--color-text-light);">
-                                        {{ gateway.description }}
-                                    </p>
-                                    {% endif %}
-                                </div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Terms -->
-                    <div class="checkout-section" style="box-shadow: none; padding: 0;">
-                        <div class="form-checkbox">
-                            <input type="checkbox" id="terms" name="terms" required>
-                            <label for="terms">
-                                {{ _("I have read and accept the") }}
-                                <a href="https://fincagarval.com/aviso-legal/" target="_blank" rel="noopener">{{ _("Terms and Conditions") }}</a>
-                                {{ _("and the") }}
-                                <a href="https://fincagarval.com/politica-privacidad/" target="_blank" rel="noopener">{{ _("Privacy Policy") }}</a> *
-                            </label>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Order Summary -->
@@ -422,13 +375,8 @@ function setupFormSubmit() {
                 // Clear cart
                 GarvalStore.Cart.clear();
 
-                // If payment URL exists, redirect to payment gateway
-                if (result.message.payment_url) {
-                    window.location.href = result.message.payment_url;
-                } else {
-                    // Redirect to confirmation for manual payments
-                    window.location.href = `/order_confirmation?order=${result.message.order_id}`;
-                }
+                // Redirect to order page (webshop's standard flow)
+                window.location.href = `/orders/${result.message.order_id}`;
             } else {
                 const errorMsg = result.message?.error || result.exc || result._server_messages || 'Error processing order';
                 throw new Error(errorMsg);

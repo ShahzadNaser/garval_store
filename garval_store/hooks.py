@@ -19,7 +19,9 @@ website_route_rules = [
     {"from_route": "/about", "to_route": "about"},
     {"from_route": "/contact", "to_route": "contact"},
     {"from_route": "/shop", "to_route": "shop"},
-    {"from_route": "/product/<name>", "to_route": "product"},
+    # Match product routes - use path:name to capture paths with slashes
+    # This matches /product/anything and /product/anything/with/slashes
+    {"from_route": "/product/<path:name>", "to_route": "product"},
     {"from_route": "/cart", "to_route": "cart"},
     {"from_route": "/checkout", "to_route": "checkout"},
     {"from_route": "/order_confirmation", "to_route": "order_confirmation"},
@@ -73,6 +75,9 @@ website_context = {
 
 # Update website context to conditionally exclude CSS from Frappe login/signup pages
 update_website_context = "garval_store.utils.update_website_context"
+
+# Custom path resolver to handle /product/... routes
+website_path_resolver = "garval_store.utils.resolve_product_path"
 
 # Jinja environment customizations
 jinja = {

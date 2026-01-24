@@ -2089,3 +2089,32 @@ body[data-path="stripe_checkout"] #page-stripe_checkout > .page-content-wrapper 
 body[data-path*="stripe_checkout"] #page-stripe_checkout > .page-content-wrapper > .page-breadcrumbs {
     display: none !important;
 }
+/* ORDERS PAGE - Hide navigation */
+body[data-path="order"] .navbar,
+body[data-path="order"] nav.navbar,
+body[data-path="order"] nav,
+body[data-path="order"] .sidebar-column,
+body[data-path="order"] .web-sidebar,
+body[data-path="order"] .page-breadcrumbs,
+body[data-path="order"] .page-header-wrapper.page-header,
+body[data-path="order"] .web-footer {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+}
+
+/* Make main content full width on orders page */
+body[data-path="order"] .main-column {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding: 20px !important;
+}
+
+body[data-path="order"] .container {
+    max-width: 900px;
+    margin: 0 auto;
+}

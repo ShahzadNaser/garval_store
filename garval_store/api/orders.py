@@ -6,8 +6,8 @@ from garval_store.utils import get_customer_from_user
 @frappe.whitelist(allow_guest=False)
 def get_payment_url(order_id):
     """
-    Get or create payment URL for an existing Sales Order.
-    Returns the payment URL so user can pay for "To Pay" orders.
+    Get payment URL for an existing Sales Order if Payment Request exists.
+    Payment Requests and Invoices must be created manually - no automatic creation.
     """
     try:
         # Get the Sales Order
@@ -18,34 +18,12 @@ def get_payment_url(order_id):
         if not customer or so.customer != customer:
             return {"success": False, "error": _("You don't have permission to access this order")}
 
-        # Check if order is in "To Pay" status
-        if so.status != "To Pay":
-            return {"success": False, "error": _("This order is not in 'To Pay' status")}
-
-        # Step 1: Check if Sales Invoice exists, if not create it
-        existing_invoice = frappe.db.get_value(
-            "Sales Invoice Item",
-            {"sales_order": order_id, "docstatus": 1},
-            "parent",
-            order_by="creation desc"
-        )
-        
-        if not existing_invoice:
-            # Create Sales Invoice from Sales Order
-            from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
-            si_doc = make_sales_invoice(order_id, ignore_permissions=True)
-            si_doc.insert(ignore_permissions=True)
-            si_doc.flags.ignore_permissions = True
-            si_doc.submit()
-            existing_invoice = si_doc.name
-            frappe.db.commit()
-        
-        # Step 2: Check if Payment Request already exists for this Sales Invoice
+        # Check if Payment Request exists for this Sales Order
         existing_pr = frappe.db.get_value(
             "Payment Request",
             {
-                "reference_doctype": "Sales Invoice",
-                "reference_name": existing_invoice,
+                "reference_doctype": "Sales Order",
+                "reference_name": order_id,
                 "docstatus": ["!=", 2]  # Not cancelled
             },
             "name",
@@ -59,64 +37,15 @@ def get_payment_url(order_id):
                 pr.set_payment_request_url()
                 pr.save(ignore_permissions=True)
                 frappe.db.commit()
-            payment_url = pr.payment_url
+            return {
+                "success": True,
+                "payment_url": pr.payment_url
+            }
         else:
-            # Create new Payment Request from Sales Invoice
-            si_doc = frappe.get_doc("Sales Invoice", existing_invoice)
-            
-            # Get payment gateway account (use first available Stripe gateway)
-            payment_gateway_account = frappe.db.get_value(
-                "Payment Gateway Account",
-                {"payment_gateway": ["like", "Stripe%"]},
-                "name",
-                order_by="creation desc"
-            )
-
-            if not payment_gateway_account:
-                return {"success": False, "error": _("No payment gateway configured. Please contact support.")}
-
-            pga = frappe.get_doc("Payment Gateway Account", payment_gateway_account)
-
-            # Get or create Mode of Payment
-            mode_of_payment = pga.payment_gateway
-            if not frappe.db.exists("Mode of Payment", mode_of_payment):
-                mop = frappe.get_doc({
-                    "doctype": "Mode of Payment",
-                    "mode_of_payment": mode_of_payment,
-                    "type": "General"
-                })
-                mop.insert(ignore_permissions=True)
-
-            # Create Payment Request from Sales Invoice (not from Sales Order)
-            pr = frappe.get_doc({
-                "doctype": "Payment Request",
-                "payment_gateway_account": pga.name,
-                "payment_gateway": pga.payment_gateway,
-                "payment_account": pga.payment_account,
-                "currency": pga.currency or si_doc.currency,
-                "grand_total": si_doc.grand_total,
-                "mode_of_payment": mode_of_payment,
-                "email_to": frappe.session.user,
-                "subject": _("Payment Request for {0}").format(si_doc.name),
-                "message": _("Payment request for invoice {0}").format(si_doc.name),
-                "reference_doctype": "Sales Invoice",  # Reference Sales Invoice, not Sales Order
-                "reference_name": si_doc.name,
-                "party_type": "Customer",
-                "party": so.customer,
-                "mute_email": 1
-            })
-            pr.insert(ignore_permissions=True)
-            pr.submit()
-
-            # Generate payment URL
-            pr.set_payment_request_url()
-            payment_url = pr.payment_url
-            frappe.db.commit()
-
-        return {
-            "success": True,
-            "payment_url": payment_url
-        }
+            return {
+                "success": False,
+                "error": _("No payment request found for this order. Please contact support to create a payment link.")
+            }
 
     except Exception as e:
         frappe.log_error(f"Error getting payment URL: {str(e)}\nOrder: {order_id}\nTraceback: {frappe.get_traceback()}", "Get Payment URL Error")

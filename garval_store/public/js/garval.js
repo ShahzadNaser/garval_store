@@ -284,6 +284,22 @@ const GarvalStore = {
             document.querySelectorAll('[data-add-to-cart]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
+                    
+                    // Check if button is disabled (out of stock)
+                    if (btn.disabled || btn.classList.contains('disabled')) {
+                        return;
+                    }
+                    
+                    // Check if product card has out-of-stock badge
+                    const productCard = btn.closest('.product-card');
+                    if (productCard) {
+                        const outOfStockBadge = productCard.querySelector('.out-of-stock');
+                        if (outOfStockBadge) {
+                            alert('This product is out of stock and cannot be added to cart.');
+                            return;
+                        }
+                    }
+                    
                     const productId = btn.dataset.addToCart;
                     const productName = btn.dataset.productName;
                     const productPrice = parseFloat(btn.dataset.productPrice);

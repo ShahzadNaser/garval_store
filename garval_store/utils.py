@@ -1,6 +1,30 @@
 import frappe
 from frappe import _
 
+def resolve_product_path(path):
+    """Custom path resolver for /product/... routes"""
+    # Only handle product routes - for others, call normal routing
+    # When a path resolver exists, it overrides normal routing, so we need to
+    # manually call resolve_path for non-product routes to ensure route rules work
+    if path and path.startswith("product/"):
+        # Extract the slug (everything after product/)
+        slug = path.replace("product/", "", 1).split("?")[0].rstrip("/")
+        # Set form_dict so product.py can access it
+        if not hasattr(frappe.local, "form_dict"):
+            frappe.local.form_dict = frappe._dict()
+        frappe.local.form_dict["name"] = slug
+        # Return the endpoint for our product page
+        return "product"
+    
+    # For non-product routes, call normal Frappe routing
+    # This ensures route rules (like /verify-email -> verify_email) work correctly
+    from frappe.website.path_resolver import resolve_path
+    try:
+        return resolve_path(path)
+    except Exception:
+        # If resolve_path fails, return path as fallback
+        return path
+
 def update_website_context(context):
     """Update website context - used to exclude CSS from Frappe default pages"""
     # Get the current path
@@ -183,192 +207,240 @@ def format_currency(amount, company=None):
     return f"{symbol}{float(amount):.2f}"
 
 def get_featured_products(limit=4):
-    """Get featured products from ERPNext Items"""
+    """Get featured products using webshop's product query API"""
     try:
-        # Try Website Item first (ERPNext e-commerce)
-        if frappe.db.exists("DocType", "Website Item"):
-            products = frappe.get_all(
-                "Website Item",
-                filters={
-                    "published": 1,
-                },
-                fields=[
-                    "name", "item_code", "item_name", "web_item_name",
-                    "short_description", "website_image", "route",
-                    "website_warehouse", "on_backorder"
-                ],
-                order_by="ranking desc, modified desc",
-                limit=limit
-            )
-
-            for product in products:
-                product.slug = product.route or product.item_code
-                product.name = product.web_item_name or product.item_name
-                # Get image from Website Item, fallback to Item image
-                product.image = product.website_image
-                if not product.image:
-                    item_image = frappe.db.get_value("Item", product.item_code, "image")
-                    product.image = item_image
-                product.description = product.short_description
-                # Check stock if warehouse is specified
-                product.out_of_stock = False
-                if product.get('website_warehouse'):
-                    product.out_of_stock = not has_stock(product.item_code, product.website_warehouse)
-                elif product.get('on_backorder'):
-                    product.out_of_stock = False  # Allow backorders
-
-                # Get price
-                price_info = get_item_price(product.item_code)
-                product.price = price_info.get('price', 0)
-                company = frappe.db.get_single_value("Global Defaults", "default_company")
-                product.formatted_price = price_info.get('formatted_price', format_currency(0, company))
-
-            return products
-
-        # Fallback to regular Items
-        products = frappe.get_all(
-            "Item",
-            filters={
-                "disabled": 0,
-                "is_sales_item": 1,
-                "show_in_website": 1
-            },
-            fields=[
-                "name", "item_code", "item_name", "description",
-                "image", "stock_uom"
-            ],
-            order_by="modified desc",
-            limit=limit
-        )
-
-        for product in products:
-            product.slug = product.item_code
-            product.name = product.item_name
-            product.out_of_stock = not has_stock(product.item_code)
-
-            price_info = get_item_price(product.item_code)
-            product.price = price_info.get('price', 0)
-            product.formatted_price = price_info.get('formatted_price', '€0.00')
-
+        from webshop.webshop.api import get_product_filter_data
+        
+        # Use webshop's API to get products sorted by ranking
+        result = get_product_filter_data({
+            "start": 0,
+            "field_filters": {}
+        })
+        
+        items = result.get("items", [])[:limit]
+        
+        # Format items to match expected structure
+        products = []
+        for item in items:
+            # Check stock status - webshop returns in_stock as 0 or 1 (or False/True)
+            in_stock = item.get("in_stock")
+            if in_stock is None:
+                # If not set, check if it's a stock item - if yes, assume out of stock if no stock_qty
+                is_stock_item = item.get("is_stock_item", False)
+                out_of_stock = bool(is_stock_item and item.get("stock_qty", 0) == 0)
+            else:
+                # in_stock is 0 (out) or 1 (in stock)
+                out_of_stock = not bool(in_stock)
+            
+            product = frappe._dict({
+                "item_code": item.get("item_code"),
+                "name": item.get("web_item_name") or item.get("item_name"),
+                "item_name": item.get("item_name"),
+                "slug": item.get("route") or item.get("item_code"),
+                "image": item.get("website_image") or item.get("image"),
+                "description": item.get("short_description") or item.get("description"),
+                "price": item.get("price_list_rate") or 0,
+                "formatted_price": item.get("formatted_price") or "€0.00",
+                "out_of_stock": out_of_stock
+            })
+            products.append(product)
+        
         return products
 
     except Exception as e:
-        frappe.log_error(f"Error fetching products: {str(e)}")
+        frappe.log_error(f"Error fetching featured products: {str(e)}")
         return []
 
 def get_all_products(filters=None, limit=20, offset=0, sort_by="modified", sort_order="desc"):
-    """Get all products with filters for shop page"""
+    """Get all products using webshop's product filter API"""
     try:
-        base_filters = {"disabled": 0, "is_sales_item": 1}
-
-        if frappe.db.exists("DocType", "Website Item"):
-            base_filters = {"published": 1}
-            doctype = "Website Item"
-            fields = [
-                "name", "item_code", "item_name", "web_item_name",
-                "short_description", "website_image", "route",
-                "website_warehouse", "on_backorder"
-            ]
-        else:
-            doctype = "Item"
-            base_filters["show_in_website"] = 1
-            fields = [
-                "name", "item_code", "item_name", "description", "image"
-            ]
-
-        # Apply custom filters
+        from webshop.webshop.api import get_product_filter_data
+        
+        # Build field filters for webshop API
+        field_filters = {}
         if filters:
             if filters.get('item_group'):
-                base_filters['item_group'] = filters.get('item_group')
-
-        products = frappe.get_all(
-            doctype,
-            filters=base_filters,
-            fields=fields,
-            order_by=f"{sort_by} {sort_order}",
-            limit_start=offset,
-            limit_page_length=limit
-        )
-
-        for product in products:
-            if doctype == "Website Item":
-                product.slug = product.route or product.item_code
-                product.name = product.web_item_name or product.item_name
-                # Get image from Website Item, fallback to Item image
-                product.image = product.website_image
-                if not product.image:
-                    item_image = frappe.db.get_value("Item", product.item_code, "image")
-                    product.image = item_image
-                # Check stock if warehouse is specified
-                product.out_of_stock = False
-                if product.get('website_warehouse'):
-                    product.out_of_stock = not has_stock(product.item_code, product.website_warehouse)
-                elif product.get('on_backorder'):
-                    product.out_of_stock = False  # Allow backorders
-            else:
-                product.slug = product.item_code
-                product.name = product.item_name
-                product.out_of_stock = not has_stock(product.item_code)
-
-            price_info = get_item_price(product.item_code)
-            product.price = price_info.get('price', 0)
-            product.formatted_price = price_info.get('formatted_price', '€0.00')
-
-        # Apply price filter client-side friendly
-        if filters:
-            price_min = filters.get('price_min')
-            price_max = filters.get('price_max')
-            if price_min:
-                products = [p for p in products if p.price >= float(price_min)]
-            if price_max:
-                products = [p for p in products if p.price <= float(price_max)]
-
-        return products
+                field_filters['item_group'] = filters.get('item_group')
+        
+        # Map sort_by to webshop's expected format
+        # webshop sorts by ranking by default, we'll handle custom sorting after
+        query_args = {
+            "start": offset,
+            "field_filters": field_filters
+        }
+        
+        # Add search if needed (for future use)
+        if filters and filters.get('search'):
+            query_args["search"] = filters.get('search')
+        
+        # Get products from webshop
+        result = get_product_filter_data(query_args)
+        items = result.get("items", [])
+        
+        # Format products to match expected structure
+        products = []
+        for item in items:
+            # Apply price filters if specified
+            price = item.get("price_list_rate") or 0
+            if filters:
+                price_min = filters.get('price_min')
+                price_max = filters.get('price_max')
+                if price_min and price < float(price_min):
+                    continue
+                if price_max and price > float(price_max):
+                    continue
+            
+            product = frappe._dict({
+                "item_code": item.get("item_code"),
+                "name": item.get("web_item_name") or item.get("item_name"),
+                "item_name": item.get("item_name"),
+                "slug": item.get("route") or item.get("item_code"),
+                "image": item.get("website_image") or item.get("image"),
+                "description": item.get("short_description") or item.get("description"),
+                "price": price,
+                "formatted_price": item.get("formatted_price") or "€0.00",
+                "out_of_stock": not item.get("in_stock", False) if item.get("is_stock_item") else False
+            })
+            products.append(product)
+        
+        # Apply custom sorting if needed
+        if sort_by == "price":
+            reverse = sort_order == "desc"
+            products.sort(key=lambda x: x.get('price', 0), reverse=reverse)
+        elif sort_by == "name" or sort_by == "item_name":
+            reverse = sort_order == "desc"
+            products.sort(key=lambda x: x.get('name', '').lower(), reverse=reverse)
+        # Default sorting by ranking is already done by webshop
+        
+        # Limit results
+        return products[:limit]
 
     except Exception as e:
         frappe.log_error(f"Error fetching products: {str(e)}")
         return []
 
 def get_product_by_slug(slug):
-    """Get single product by slug/route"""
+    """Get single product by slug/route using webshop's product info API"""
+    if not slug:
+        return None
+        
+    slug = slug.strip()  # Remove any whitespace
+        
     try:
+        from webshop.webshop.shopping_cart.product_info import get_product_info_for_website
+        
+        # First try to find Website Item by route or item_code
+        website_item_name = None
+        item_code = None
+        
         if frappe.db.exists("DocType", "Website Item"):
-            product = frappe.get_doc("Website Item", {"route": slug})
-            # Check stock availability
-            out_of_stock = False
-            if product.website_warehouse:
-                out_of_stock = not has_stock(product.item_code, product.website_warehouse)
-
-            return {
-                "item_code": product.item_code,
-                "name": product.web_item_name or product.item_name,
-                "description": product.web_long_description or product.short_description,
-                "short_description": product.short_description,
-                "image": product.website_image,
-                "images": get_product_images(product.name, "Website Item"),
-                "price": get_item_price(product.item_code).get('price', 0),
-                "formatted_price": get_item_price(product.item_code).get('formatted_price', format_currency(0)),
-                "out_of_stock": out_of_stock,
-                "uom": product.stock_uom
-            }
-        else:
-            # Try by item_code
+            # Try by full route first (may include item group path like "demo-item-group/website-product-1-f2rah")
+            if slug:
+                # First try exact route match
+                website_item_name = frappe.db.get_value("Website Item", {"route": slug}, "name")
+                if website_item_name:
+                    item_code = frappe.db.get_value("Website Item", website_item_name, "item_code")
+                else:
+                    # Try with LIKE to match routes (handles trailing slashes or variations)
+                    website_items = frappe.db.get_all(
+                        "Website Item",
+                        filters={"route": ["like", f"{slug}%"]},
+                        fields=["name", "route"],
+                        limit=1
+                    )
+                    if website_items:
+                        website_item_name = website_items[0].name
+                        item_code = frappe.db.get_value("Website Item", website_item_name, "item_code")
+            
+            # If not found by full route, try to find by the last part of the route (product name only)
+            if not website_item_name and '/' in slug:
+                # Extract just the product name part (after last slash)
+                product_name = slug.split('/')[-1]
+                website_item_name = frappe.db.get_value("Website Item", {"route": product_name}, "name")
+                if not website_item_name:
+                    # Try with LIKE to match routes ending with the product name
+                    website_items = frappe.db.get_all(
+                        "Website Item",
+                        filters={"route": ["like", f"%/{product_name}"]},
+                        fields=["name", "route"],
+                        limit=1
+                    )
+                    if website_items:
+                        website_item_name = website_items[0].name
+                
+                if website_item_name:
+                    item_code = frappe.db.get_value("Website Item", website_item_name, "item_code")
+            
+            # Fallback: try by item_code (slug might be item_code)
+            if not item_code:
+                # Try exact item_code match
+                website_item_name = frappe.db.get_value("Website Item", {"item_code": slug}, "name")
+                if website_item_name:
+                    item_code = slug
+                else:
+                    # Try if slug is the Website Item name itself
+                    if frappe.db.exists("Website Item", slug):
+                        website_item_name = slug
+                        item_code = frappe.db.get_value("Website Item", slug, "item_code")
+        
+        # If still not found, try Item directly
+        if not item_code:
             if frappe.db.exists("Item", slug):
-                product = frappe.get_doc("Item", slug)
+                item_code = slug
+            else:
+                return None
+        
+        # Get product info using webshop's API
+        product_info_data = get_product_info_for_website(item_code, skip_quotation_creation=True)
+        product_info = product_info_data.get("product_info", {})
+        cart_settings = product_info_data.get("cart_settings", {})
+        
+        # Get Website Item document for additional details
+        if website_item_name:
+            website_item = frappe.get_doc("Website Item", website_item_name)
+        else:
+            # Try to get Website Item by item_code
+            website_item_name = frappe.db.get_value("Website Item", {"item_code": item_code}, "name")
+            if website_item_name:
+                website_item = frappe.get_doc("Website Item", website_item_name)
+            else:
+                # Fallback to Item
+                item = frappe.get_doc("Item", item_code)
                 return {
-                    "item_code": product.item_code,
-                    "name": product.item_name,
-                    "description": product.description,
-                    "short_description": product.description[:200] if product.description else "",
-                    "image": product.image,
-                    "images": [],
-                    "price": get_item_price(product.item_code).get('price', 0),
-                    "formatted_price": get_item_price(product.item_code).get('formatted_price', format_currency(0)),
-                    "out_of_stock": not has_stock(product.item_code),
-                    "uom": product.stock_uom
+                    "item_code": item_code,
+                    "name": item.item_name,
+                    "description": item.description,
+                    "short_description": item.description,
+                    "image": item.image,
+                    "images": get_product_images(item.name, "Item"),
+                    "price": product_info.get("price", {}).get("price") or 0,
+                    "formatted_price": product_info.get("price", {}).get("formatted_price") or "€0.00",
+                    "out_of_stock": not product_info.get("in_stock", False),
+                    "uom": product_info.get("uom") or item.stock_uom
                 }
+        
+        # Get price info
+        price_info = product_info.get("price", {})
+        
+        return {
+            "item_code": item_code,
+            "name": website_item.web_item_name or website_item.item_name,
+            "description": website_item.web_long_description or website_item.short_description,
+            "short_description": website_item.short_description,
+            "image": website_item.website_image or frappe.db.get_value("Item", item_code, "image"),
+            "images": get_product_images(website_item.name, "Website Item"),
+            "price": price_info.get("price_list_rate") or 0,
+            "formatted_price": price_info.get("formatted_price") or "€0.00",
+            "out_of_stock": not product_info.get("in_stock", False) if product_info.get("is_stock_item") else False,
+            "uom": product_info.get("uom") or website_item.stock_uom,
+            "stock_qty": product_info.get("stock_qty", 0),
+            "on_backorder": product_info.get("on_backorder", False)
+        }
+            
     except Exception as e:
-        frappe.log_error(f"Error fetching product {slug}: {str(e)}")
+        frappe.log_error(f"Error fetching product '{slug}': {str(e)}", "get_product_by_slug")
+        import traceback
+        frappe.log_error(traceback.format_exc(), "get_product_by_slug_traceback")
 
     return None
 
@@ -918,7 +990,7 @@ def create_sales_order_from_cart(cart_data, customer_info):
             "customer": customer,
             "company": company,
             "delivery_date": frappe.utils.add_days(frappe.utils.nowdate(), 7),
-            "order_type": "Sales",
+            "order_type": "Shopping Cart",
             "contact_email": customer_info.get("email"),
             "contact_mobile": customer_info.get("phone"),
             "items": []
@@ -930,27 +1002,8 @@ def create_sales_order_from_cart(cart_data, customer_info):
 
         # Add shipping address if provided
         if customer_info.get("selected_address"):
-            # Use existing address
             so.shipping_address_name = customer_info.get("selected_address")
-        elif customer_info.get("address"):
-            # Fallback: Create address from form fields (legacy support)
-            address = frappe.get_doc({
-                "doctype": "Address",
-                "address_title": customer_info.get("full_name"),
-                "address_type": "Shipping",
-                "address_line1": customer_info.get("address"),
-                "city": customer_info.get("city", ""),
-                "country": customer_info.get("country", "Spain"),
-                "pincode": customer_info.get("postal_code", ""),
-                "links": [{
-                    "link_doctype": "Customer",
-                    "link_name": customer
-                }]
-            })
-            address.insert(ignore_permissions=True)
-            so.shipping_address_name = address.name
-
-        # Apply taxes template to Sales Order
+        
         tax_template_name = frappe.db.get_value(
             "Sales Taxes and Charges Template",
             {
@@ -971,178 +1024,16 @@ def create_sales_order_from_cart(cart_data, customer_info):
                 for tax_row in taxes_list:
                     so.append("taxes", tax_row)
         
-        # Calculate totals (this will calculate taxes and grand total)
         so.calculate_taxes_and_totals()
 
         so.insert(ignore_permissions=True)
-        so.submit()
-
-        # Create Payment Request if payment gateway is provided
-        payment_url = None
-        payment_gateway = customer_info.get("payment_method")
-
-        if payment_gateway and payment_gateway != "Manual":
-            si_doc = None
-            try:
-                # Step 1: Create Sales Invoice from Sales Order (Proper ERPNext flow)
-                # This is EXACTLY how UI does it
-                from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
-                si_doc = make_sales_invoice(so.name, ignore_permissions=True)
-                
-                # Ensure set_missing_values and calculate_taxes_and_totals are called (like UI does)
-                si_doc.run_method("set_missing_values")
-                si_doc.run_method("calculate_taxes_and_totals")
-                
-                si_doc.insert(ignore_permissions=True)
-                si_doc.flags.ignore_permissions = True
-                si_doc.submit()
-                
-                # Reload to get correct outstanding_amount after submit
-                si_doc.reload()
-                
-                # Get payment gateway account
-                payment_gateway_account = frappe.get_doc("Payment Gateway Account", payment_gateway)
-
-                # Check if Payment Gateway has a controller (Bank Transfer doesn't)
-                pg_controller = frappe.db.get_value("Payment Gateway", payment_gateway_account.payment_gateway, "gateway_controller")
-                is_bank_transfer = not pg_controller or "Bank Transfer" in str(payment_gateway_account.payment_gateway)
-                
-                # For Bank Transfer: Create Payment Request
-                if is_bank_transfer:
-                    # Get first enabled bank account for company (don't check is_company_account)
-                    bank_account = frappe.db.get_value(
-                        "Bank Account",
-                        {"company": company, "disabled": 0},
-                        "name",
-                        order_by="is_default desc, creation desc"
-                    )
-                    
-                    if not bank_account:
-                        frappe.throw(_("No company bank account found for Bank Transfer. Please configure one."))
-                    
-                    # Create Payment Request from Sales Invoice
-                    # Use outstanding_amount instead of grand_total for Payment Request
-                    # Get message and subject from Payment Gateway Account (like UI does)
-                    pr_message = payment_gateway_account.message or _("Payment request for invoice {0}").format(si_doc.name)
-                    pr_subject = getattr(payment_gateway_account, "subject", None) or _("Invoice pending for {0}").format(so.name)
-                    
-                    pr = frappe.get_doc({
-                        "doctype": "Payment Request",
-                        "payment_gateway_account": payment_gateway_account.name,
-                        "payment_gateway": payment_gateway_account.payment_gateway,
-                        "payment_account": payment_gateway_account.payment_account,
-                        "currency": si_doc.currency,
-                        "grand_total": si_doc.outstanding_amount,
-                        "mode_of_payment": payment_gateway_account.payment_gateway,
-                        "email_to": customer_info.get("email"),
-                        "subject": pr_subject,
-                        "message": pr_message,
-                        "reference_doctype": "Sales Invoice",
-                        "reference_name": si_doc.name,
-                        "party_type": "Customer",
-                        "party": customer,
-                        "bank_account": bank_account
-                    })
-                    pr.insert(ignore_permissions=True)
-                    pr.submit()
-                    
-                    payment_url = None  # No payment URL for Bank Transfer
-                    
-                else:
-                    # For other payment gateways: Create Payment Request
-                    # Get or create Mode of Payment
-                    mode_of_payment = payment_gateway_account.payment_gateway
-                    if not frappe.db.exists("Mode of Payment", mode_of_payment):
-                        mop = frappe.get_doc({
-                            "doctype": "Mode of Payment",
-                            "mode_of_payment": mode_of_payment,
-                            "type": "General"
-                        })
-                        mop.insert(ignore_permissions=True)
-
-                    # Create Payment Request from Sales Invoice
-                    # Use outstanding_amount instead of grand_total for Payment Request
-                    # Get message and subject from Payment Gateway Account (like UI does)
-                    pr_message = payment_gateway_account.message or _("Payment request for invoice {0}").format(si_doc.name)
-                    pr_subject = getattr(payment_gateway_account, "subject", None) or _("Payment Request for {0}").format(si_doc.name)
-
-                    pr = frappe.get_doc({
-                        "doctype": "Payment Request",
-                        "payment_gateway_account": payment_gateway_account.name,
-                        "payment_gateway": payment_gateway_account.payment_gateway,
-                        "payment_account": payment_gateway_account.payment_account,
-                        "currency": payment_gateway_account.currency or si_doc.currency,
-                        "grand_total": si_doc.outstanding_amount,
-                        "mode_of_payment": mode_of_payment,
-                        "email_to": customer_info.get("email"),
-                        "subject": pr_subject,
-                        "message": pr_message,
-                        "reference_doctype": "Sales Invoice",
-                        "reference_name": si_doc.name,
-                        "party_type": "Customer",
-                        "party": customer,
-                        "mute_email": 1  # Don't send email, we're redirecting directly
-                    })
-                    pr.insert(ignore_permissions=True)
-                    pr.submit()
-                    
-                    # Generate payment URL
-                    payment_url = None
-                    try:
-                        pr.reload()
-                        payment_url = pr.payment_url
-                        if not payment_url:
-                            pr.set_payment_request_url()
-                            payment_url = pr.payment_url
-                    except Exception as url_error:
-                        frappe.log_error(f"Payment URL generation failed: {str(url_error)}", "Payment URL Error")
-                        payment_url = None
-
-            except Exception as e:
-                error_msg = f"Error creating payment request: {str(e)}\nTraceback: {frappe.get_traceback()}\nPayment Gateway: {payment_gateway}"
-                frappe.log_error(error_msg, "Payment Error")
-                
-                # Cancel Sales Invoice if it was created
-                if si_doc:
-                    try:
-                        si_doc.reload()
-                        if si_doc.docstatus == 1:  # If submitted
-                            si_doc.cancel()
-                            frappe.log_error(f"Cancelled Sales Invoice {si_doc.name} due to payment error", "Payment Error")
-                    except Exception as cancel_error:
-                        frappe.log_error(f"Error cancelling Sales Invoice: {str(cancel_error)}", "Payment Error")
-                
-                # Cancel Sales Order
-                try:
-                    so.reload()
-                    if so.docstatus == 1:  # If submitted
-                        so.cancel()
-                        frappe.log_error(f"Cancelled Sales Order {so.name} due to payment error", "Payment Error")
-                except Exception as cancel_error:
-                    frappe.log_error(f"Error cancelling Sales Order: {str(cancel_error)}", "Payment Error")
-                
-                frappe.db.rollback()
-                
-                # Return specific error message
-                error_detail = str(e)
-                if "Settings not found" in error_detail:
-                    return {
-                        "success": False,
-                        "error": _("Payment gateway configuration error. Please contact support.")
-                    }
-                else:
-                    return {
-                        "success": False,
-                        "error": _("Failed to process payment: {0}").format(error_detail)
-                    }
 
         frappe.db.commit()
 
         return {
             "success": True,
             "order_id": so.name,
-            "order": so.as_dict(),
-            "payment_url": payment_url
+            "order": so.as_dict()
         }
 
     except Exception as e:

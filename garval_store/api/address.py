@@ -11,6 +11,17 @@ def get_address(address_id):
         if not customer_name:
             return {"success": False, "error": "Not logged in"}
 
+        # Handle URL-encoded address_id and get from form_dict if not provided
+        if not address_id:
+            address_id = frappe.form_dict.get('address_id')
+        
+        if not address_id:
+            return {"success": False, "error": "Address ID is required"}
+
+        # Check if address exists
+        if not frappe.db.exists("Address", address_id):
+            return {"success": False, "error": f"Address {address_id} not found"}
+
         address = frappe.get_doc("Address", address_id)
 
         # Check if address belongs to customer

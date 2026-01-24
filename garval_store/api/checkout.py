@@ -1,20 +1,18 @@
 import frappe
 from frappe import _
-from garval_store.utils import (
-    create_sales_order_from_cart,
-    calculate_taxes_and_charges,
-    format_currency,
-    get_email_verified
+from garval_store.utils import get_email_verified
+from webshop.webshop.shopping_cart.cart import (
+    update_cart,
+    update_cart_address,
+    place_order
 )
 
-@frappe.whitelist(allow_guest=True)
-def create_order(customer_info, items, total):
-    """Create ERPNext Sales Order from checkout"""
-    # Require email verification
+@frappe.whitelist()
+def create_order(customer_info, items):
+    """Create Sales Order using webshop's place_order functionality"""
     if frappe.session.user == "Guest":
         frappe.throw(_("Please login to place an order"), frappe.AuthenticationError)
     
-    # Check email verification (skip for Administrator)
     if frappe.session.user not in ("Administrator",):
         email_verified = get_email_verified(frappe.session.user)
         if not email_verified:
@@ -24,45 +22,42 @@ def create_order(customer_info, items, total):
             )
     
     try:
-        if isinstance(customer_info, str):
-            import json
-            customer_info = json.loads(customer_info)
-        if isinstance(items, str):
-            import json
-            items = json.loads(items)
+        for item in items:
+            item_code = item.get("id") or item.get("item_code")
+            qty = item.get("quantity", 1)
+            if item_code:
+                update_cart(item_code=item_code, qty=qty, with_items=False)
 
-        cart_data = {
-            "items": items,
-            "total": float(total)
+        if customer_info.get("selected_address"):
+            update_cart_address(
+                address_type="shipping",
+                address_name=customer_info.get("selected_address")
+            )
+
+        sales_order_name = place_order()
+        return {
+            "success": True,
+            "order_id": sales_order_name
         }
-
-        result = create_sales_order_from_cart(cart_data, customer_info)
-
-        if result.get("success"):
-            # Order confirmation email is now sent when payment is marked as paid
-            # Invoice email with bank details is sent via Payment Request on submit
-            return {
-                "success": True,
-                "order_id": result.get("order_id"),
-                "payment_url": result.get("payment_url"),
-                "message": _("Order placed successfully")
-            }
-        else:
-            return {
-                "success": False,
-                "error": result.get("error", _("Failed to create order"))
-            }
 
     except Exception as e:
         frappe.log_error(f"Create order error: {str(e)}")
+        frappe.db.rollback()
+        error_message = str(e)
+        
+        if "Not in Stock" in error_message:
+            error_message = _("One or more items in your cart are out of stock. Please remove them or reduce the quantity and try again.")
+        
         return {
             "success": False,
-            "error": _("Failed to process order. Please try again.")
+            "error": error_message or _("Failed to process order. Please try again.")
         }
 
 def send_order_confirmation(order_id, email):
     """Send order confirmation email"""
     try:
+        from frappe.utils import fmt_money
+        
         order = frappe.get_doc("Sales Order", order_id)
 
         subject = _("Order Confirmation - {0}").format(order_id)
@@ -85,7 +80,7 @@ def send_order_confirmation(order_id, email):
             <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #ddd;">{item.item_name}</td>
                 <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">{item.qty}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">{format_currency(item.amount)}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">{fmt_money(item.amount, currency=order.currency)}</td>
             </tr>
             """
 
@@ -93,7 +88,7 @@ def send_order_confirmation(order_id, email):
         </table>
 
         <p style="margin-top: 20px; font-size: 18px;">
-            <strong>{_('Total')}: {format_currency(order.grand_total)}</strong>
+            <strong>{_('Total')}: {fmt_money(order.grand_total, currency=order.currency)}</strong>
         </p>
 
         <p>{_('We will notify you when your order ships.')}</p>
@@ -151,15 +146,22 @@ def get_shipping_rates(country, postal_code=None):
             "error": str(e)
         }
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def calculate_taxes(subtotal):
-    """Calculate taxes and charges for checkout page"""
+    """Calculate taxes using webshop's cart system"""
     try:
-        subtotal = float(subtotal)
-        result = calculate_taxes_and_charges(subtotal)
+        from webshop.webshop.shopping_cart.cart import get_cart_quotation
+        
+        # Get cart quotation which has taxes calculated
+        cart_data = get_cart_quotation()
+        quotation = cart_data.get("doc", {})
+        
         return {
             "success": True,
-            **result
+            "subtotal": quotation.get("net_total", 0),
+            "taxes": quotation.get("total_taxes_and_charges", 0),
+            "grand_total": quotation.get("grand_total", 0),
+            "currency": quotation.get("currency")
         }
     except Exception as e:
         frappe.log_error(f"Calculate taxes error: {str(e)}")

@@ -97,9 +97,9 @@
                                 <td>{{ currency_symbol }}{{ "%.2f"|format(order.grand_total) }}</td>
                                 <td>
                                     {% if order.status == 'To Pay' %}
-                                    <button onclick="payNow('{{ order.name }}')" class="btn btn-primary" style="padding: 5px 10px; font-size: var(--font-size-xs);">
+                                    <a href="/orders/{{ order.name }}" class="btn btn-primary" style="padding: 5px 10px; font-size: var(--font-size-xs);">
                                         <i class="fas fa-credit-card"></i> {{ _("Pay Now") }}
-                                    </button>
+                                    </a>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -229,11 +229,11 @@
                                     </p>
                                 </div>
                                 <div style="margin-top: var(--spacing-md); display: flex; gap: var(--spacing-sm);">
-                                    <button onclick="editAddress('{{ address.name }}')" class="btn btn-outline" style="padding: 5px 10px; font-size: var(--font-size-xs); flex: 1;">
+                                    <button onclick="editAddress({{ address.name|tojson }})" class="btn btn-outline" style="padding: 5px 10px; font-size: var(--font-size-xs); flex: 1;">
                                         <i class="fas fa-edit"></i>
                                         {{ _("Edit") }}
                                     </button>
-                                    <button onclick="deleteAddress('{{ address.name }}')" class="btn btn-outline" style="padding: 5px 10px; font-size: var(--font-size-xs); color: var(--color-error); border-color: var(--color-error);">
+                                    <button onclick="deleteAddress({{ address.name|tojson }})" class="btn btn-outline" style="padding: 5px 10px; font-size: var(--font-size-xs); color: var(--color-error); border-color: var(--color-error);">
                                         <i class="fas fa-trash"></i>
                                         {{ _("Delete") }}
                                     </button>
@@ -500,7 +500,9 @@ function closeAddressModal() {
 }
 
 async function loadAddressData(addressId) {
-    const response = await fetch(`/api/method/garval_store.api.address.get_address?address_id=${addressId}`, {
+    // URL encode the address_id to handle special characters
+    const encodedAddressId = encodeURIComponent(addressId);
+    const response = await fetch(`/api/method/garval_store.api.address.get_address?address_id=${encodedAddressId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
