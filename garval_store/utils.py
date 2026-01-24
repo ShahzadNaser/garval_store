@@ -551,7 +551,7 @@ def get_item_price(item_code, price_list=None):
     """Get item price from ERPNext Price List"""
     try:
         if not price_list:
-            price_list = frappe.db.get_single_value("Selling Settings", "selling_price_list")
+            price_list = frappe.db.get_single_value("Webshop Settings", "price_list")
 
         if not price_list:
             price_list = frappe.db.get_value("Price List", {"selling": 1, "enabled": 1}, "name")
