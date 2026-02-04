@@ -2096,7 +2096,7 @@ body[data-path="order"] nav,
 body[data-path="order"] .sidebar-column,
 body[data-path="order"] .web-sidebar,
 body[data-path="order"] .page-breadcrumbs,
-body[data-path="order"] .page-header-wrapper.page-header,
+body[data-path="order"] .page-header-wrapper .page-header,
 body[data-path="order"] .web-footer {
     display: none !important;
     visibility: hidden !important;

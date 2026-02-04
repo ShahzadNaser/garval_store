@@ -92,6 +92,7 @@ override_whitelisted_methods = {}
 # Override doctype classes
 override_doctype_class = {
 	"Customer": "garval_store.overrides.customer.Customer",
+	"Payment Request": "garval_store.overrides.payment_request.PaymentRequest",
 }
 
 # Default language
